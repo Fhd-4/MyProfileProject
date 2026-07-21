@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { AdminPanel } from './admin-panel';
 
 describe('AdminPanel', () => {

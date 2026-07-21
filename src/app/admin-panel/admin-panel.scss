@@ -1,23 +1,234 @@
-.container{
-    width:400px;
-    margin:40px auto;
-    display:flex;
-    flex-direction:column;
+/* تهيئة الفضاء اللوني وفك ارتباط خصائص الفليكس الموروثة بشكل خاطئ */
+.admin-wrapper {
+  position: relative;
+  min-height: 100vh;
+  background-color: #070b13 !important;
+  color: #e2e8f0 !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  display: block !important;
+  text-align: left !important;
 }
 
-form{
-    display:flex;
-    flex-direction:column;
-    gap:15px;
+/* الكانفاس مدفوع للخلفية كلياً ولا يحجب الماوس والنقرات عن الأزرار */
+.interactive-canvas {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1 !important; 
+  pointer-events: none !important;
 }
 
-input,
-select{
-    padding:10px;
-    font-size:15px;
+.container {
+  position: relative;
+  z-index: 999 !important; /* رفع مستوى الطبقة لضمان تتبع الحدث الفوري */
+  max-width: 900px; 
+  margin: 0 auto !important;
+  padding: 32px 16px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 24px;
 }
 
-button{
-    padding:12px;
-    cursor:pointer;
+/* الهيدر */
+.page-header {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  text-align: left !important;
+
+  .title {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px;
+    h1 { font-size: 20px; font-weight: 600; color: #ffffff; margin: 0; }
+    
+    .polygon-logo {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #3b82f6;
+      transform: rotate(45deg);
+      border-radius: 2px;
+    }
+  }
+  .actions {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 16px;
+    .icon-btn { background: transparent; border: none; color: #94a3b8; font-size: 18px; cursor: pointer !important; &:hover { color: #ffffff; } }
+  }
+}
+
+/* لوحة بطاقات التحليلات */
+.stats {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 20px;
+  @media (max-width: 768px) { grid-template-columns: 1fr !important; }
+
+  .stat-card {
+    background: rgba(15, 22, 38, 0.6) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 16px;
+    text-align: left !important;
+    
+    h2 { font-size: 24px; font-weight: 700; color: #ffffff; margin: 0; }
+    p { font-size: 12px; color: #94a3b8; margin: 4px 0 0 0; }
+    .icon-badge { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .blue-badge { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
+    .green-badge { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+    .cyan-badge { background: rgba(6, 182, 212, 0.1); color: #22d3ee; }
+  }
+}
+
+/* زر العميل بلونه التكتيكي الغامق المطابق للتصميم تماماً */
+.action-trigger-row { display: flex !important; justify-content: flex-start !important; }
+.add-btn {
+  background: #113cb0 !important; 
+  color: #ffffff;
+  border: none;
+  font-size: 13px;
+  padding: 10px 22px;
+  border-radius: 30px;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px;
+  cursor: pointer !important;
+  transition: background 0.2s;
+  &:hover { background: #1d4ed8 !important; }
+}
+
+/* صندوق الإدخال بعرضه المحكم ومنع التمدد الجانبي */
+.form-panel {
+  background: rgba(15, 22, 38, 0.6) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 100% !important;
+  text-align: left !important;
+
+  h3 { font-size: 15px; color: #ffffff; margin: 0 0 20px 0; text-align: left !important; }
+  .form-row { 
+    display: grid !important; 
+    gap: 16px; 
+    margin-bottom: 16px; 
+    &.rows-2 { grid-template-columns: 1fr 1fr !important; } 
+    &.rows-3 { grid-template-columns: 1fr 1fr 1fr !important; } 
+    @media (max-width: 640px) { grid-template-columns: 1fr !important; }
+  }
+  
+  .input-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px;
+    text-align: left !important;
+    label { font-size: 10px; color: #94a3b8; text-transform: uppercase; text-align: left !important; }
+    input, select { 
+      background-color: #0e1524 !important; 
+      border: 1px solid #1e293b !important; 
+      color: #ffffff !important; 
+      padding: 12px; 
+      font-size: 13px; 
+      border-radius: 12px; 
+      outline: none;
+      text-align: left !important;
+    }
+    
+    /* جعل خيارات القائمة المنسدلة داكنة تناسب الثيم العام */
+    select option {
+      background-color: #0e1524 !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .form-actions-buttons {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 12px;
+    margin-top: 24px;
+    button { padding: 10px 24px; font-size: 12px; border-radius: 10px; cursor: pointer !important; }
+    .submit-btn { background: #3b82f6; color: #ffffff; border: none; }
+    .cancel-btn { background: transparent; border: 1px solid #1e293b; color: #94a3b8; }
+  }
+}
+
+/* دليل عرض القوائم وتفتيح لون تاريخ الانتهاء المظلم سابقاً */
+.client-directory-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px;
+  
+  .client-card-row {
+    background: rgba(15, 22, 38, 0.5) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+
+    .client-left-profile {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: 16px;
+      text-align: left !important;
+      img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+      
+      .client-meta-info {
+        text-align: left !important;
+        .title-status-line { 
+          display: flex !important; 
+          flex-direction: row !important; 
+          align-items: center !important; 
+          gap: 8px; 
+          h4 { margin: 0; color: #ffffff; font-size: 14px; }
+          .status-badge { font-size: 9px; padding: 2px 6px; border-radius: 6px; }
+          .badge-active { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+          .badge-expired { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+        }
+        .email-row-text { 
+          font-size: 12px; color: #64748b; margin: 4px 0 0 0; display: flex !important; flex-direction: row !important; align-items: center !important; gap: 6px;
+          span { color: #94a3b8; }
+        }
+        
+        /* جعل لون نص تاريخ الانتهاء ساطعاً وواضحاً كلياً */
+        .expiration-row-text.text-highlighted { 
+          font-size: 12px !important; 
+          color: #cbd5e1 !important; 
+          margin: 4px 0 0 0; 
+          display: flex !important; 
+          flex-direction: row !important; 
+          align-items: center !important; 
+          gap: 4px; 
+          font-weight: 500;
+        }
+      }
+    }
+
+    .client-right-actions {
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 8px;
+      .row-action-btn { 
+        width: 32px; height: 32px; background: rgba(30, 41, 59, 0.4); border: none; color: #64748b; border-radius: 8px; cursor: pointer !important; display: flex; align-items: center; justify-content: center;
+        &:hover { color: #ffffff; background: #1e293b; }
+        &.delete-btn-accent:hover { color: #f87171; background: rgba(239, 68, 68, 0.2); }
+      }
+    }
+  }
 }
