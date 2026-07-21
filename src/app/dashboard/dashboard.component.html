@@ -1,0 +1,357 @@
+<div class="mycard-dashboard-wrapper" [attr.dir]="dir">
+  <!-- Interactive Constellation Network Background Canvas -->
+  <canvas #particleCanvas class="interactive-canvas"></canvas>
+
+  <!-- Top Bar: Title on Left, 3 Icon Actions on Right -->
+  <header class="top-bar">
+    <h1 class="brand-title">{{ t.brand }}</h1>
+
+    <div class="header-actions">
+      <!-- Language Switcher Button -->
+      <button class="icon-btn" (click)="toggleLanguage()" [title]="currentLang === 'en' ? 'تغيير إلى العربية' : 'Switch to English'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m5 8 6 6"/>
+          <path d="m4 14 6-6 2-3"/>
+          <path d="M2 5h12"/>
+          <path d="M7 2h1"/>
+          <path d="m22 22-5-10-5 10"/>
+          <path d="M14 18h6"/>
+        </svg>
+      </button>
+
+      <!-- Eye Preview Card Button -->
+      <button class="icon-btn" (click)="togglePreviewModal()" title="Preview Digital Card">
+        <i class="fa-regular fa-eye"></i>
+      </button>
+
+      <!-- Logout Button -->
+      <button class="icon-btn" (click)="logout()" [title]="t.logout">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="dashboard-content-container">
+    <!-- Horizontal Navigation Tabs -->
+    <nav class="tabs-nav-bar">
+      <button class="nav-tab-pill" [class.active]="activeTab === 'basic'" (click)="setTab('basic')">
+        <i class="fa-solid fa-user"></i>
+        <span>{{ t.basicTab }}</span>
+      </button>
+
+      <button class="nav-tab-pill" [class.active]="activeTab === 'contact'" (click)="setTab('contact')">
+        <i class="fa-solid fa-phone"></i>
+        <span>{{ t.contactTab }}</span>
+      </button>
+
+      <button class="nav-tab-pill" [class.active]="activeTab === 'social'" (click)="setTab('social')">
+        <i class="fa-solid fa-globe"></i>
+        <span>{{ t.socialTab }}</span>
+      </button>
+
+      <button class="nav-tab-pill" [class.active]="activeTab === 'skills'" (click)="setTab('skills')">
+        <i class="fa-solid fa-ribbon"></i>
+        <span>{{ t.skillsTab }}</span>
+      </button>
+
+      <button class="nav-tab-pill" [class.active]="activeTab === 'experience'" (click)="setTab('experience')">
+        <i class="fa-solid fa-briefcase"></i>
+        <span>{{ t.expTab }}</span>
+      </button>
+
+      <button class="nav-tab-pill" [class.active]="activeTab === 'education'" (click)="setTab('education')">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <span>{{ t.eduTab }}</span>
+      </button>
+    </nav>
+
+    <!-- Notification Banner -->
+    <div class="notification-alert alert-success" *ngIf="successMessage">
+      <i class="fa-solid fa-circle-check"></i>
+      <span>{{ successMessage }}</span>
+    </div>
+
+    <!-- TAB 1: BASIC INFO -->
+    <div class="tab-pane-wrapper" *ngIf="activeTab === 'basic'">
+      <!-- PROFILE PHOTO & BACKGROUND CARD -->
+      <section class="glass-card section-box mb-6">
+        <div class="box-header">
+          <span class="box-title-muted">{{ t.photoBgHeader }}</span>
+          <button class="action-btn-secondary" (click)="triggerPhotoUpload('background')">
+            <i class="fa-solid fa-camera"></i>
+            <span>{{ t.changeBgBtn }}</span>
+          </button>
+        </div>
+
+        <div class="photo-bg-preview-area" [style.background-image]="userData.backgroundPhoto ? 'url(' + userData.backgroundPhoto + ')' : null">
+          <div class="no-bg-watermark" *ngIf="!userData.backgroundPhoto">
+            {{ t.noBgText }}
+          </div>
+
+          <div class="center-avatar-wrapper">
+            <div class="avatar-circle">
+              <img
+                [src]="userData.profilePhoto || 'https://ui-avatars.com/api/?name=' + userDisplayName + '&background=1d8cf8&color=fff'"
+                alt="Avatar"
+                class="avatar-image"
+                (error)="userData.profilePhoto = 'https://ui-avatars.com/api/?name=' + userDisplayName + '&background=1d8cf8&color=fff'"
+              />
+            </div>
+            <button class="change-photo-link" (click)="triggerPhotoUpload('avatar')">
+              <i class="fa-solid fa-arrow-up-from-bracket"></i>
+              <span>{{ t.changePhotoBtn }}</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- FORM INPUTS CARD -->
+      <section class="glass-card section-box">
+        <div class="form-inputs-grid">
+          <div class="form-group">
+            <label>{{ t.nameEnLabel }}</label>
+            <input type="text" class="glass-input" [(ngModel)]="userData.nameEn" placeholder="Wael Al-Habbal" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ t.nameArLabel }}</label>
+            <input type="text" class="glass-input" [(ngModel)]="userData.nameAr" placeholder="وائل الحبال" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ t.titleEnLabel }}</label>
+            <input type="text" class="glass-input" [(ngModel)]="userData.titleEn" placeholder="Chief Executive Officer (CEO)" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ t.titleArLabel }}</label>
+            <input type="text" class="glass-input" [(ngModel)]="userData.titleAr" placeholder="الرئيس التنفيذي" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ t.companyEnLabel }}</label>
+            <input type="text" class="glass-input" [(ngModel)]="userData.companyEn" placeholder="7 Pixel Company" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ t.companyArLabel }}</label>
+            <input type="text" class="glass-input" [(ngModel)]="userData.companyAr" placeholder="شركة 7 بكسل" />
+          </div>
+
+          <div class="form-group full-width">
+            <label>{{ t.aboutEnLabel }}</label>
+            <textarea class="glass-input textarea" rows="3" [(ngModel)]="userData.aboutEn" placeholder="General Manager with experience in leading technical teams..."></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label>{{ t.aboutArLabel }}</label>
+            <textarea class="glass-input textarea" rows="3" [(ngModel)]="userData.aboutAr" placeholder="مدير عام لشركة سيفن بكسل يتمتع بخبرة في قيادة الفرق التقنية..."></textarea>
+          </div>
+        </div>
+
+        <!-- SAVE CHANGES BUTTON BOTTOM RIGHT -->
+        <div class="save-button-row">
+          <button class="save-btn" (click)="saveProfile()" [disabled]="isSaving">
+            <i class="fa-solid fa-floppy-disk" *ngIf="!isSaving"></i>
+            <i class="fa-solid fa-spinner fa-spin" *ngIf="isSaving"></i>
+            <span>{{ isSaving ? t.saving : t.save }}</span>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 2: CONTACT INFO -->
+    <div class="tab-pane-wrapper" *ngIf="activeTab === 'contact'">
+      <section class="glass-card section-box">
+        <div class="form-inputs-grid">
+          <div class="form-group">
+            <label>{{ t.emailLabel }}</label>
+            <input type="email" class="glass-input" [(ngModel)]="userData.email" placeholder="wael@7pixel.com.sa" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ t.phoneLabel }}</label>
+            <input type="tel" class="glass-input" [(ngModel)]="userData.phone" placeholder="+966 50 000 0000" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ t.locationEnLabel }}</label>
+            <input type="text" class="glass-input" [(ngModel)]="userData.locationEn" placeholder="Riyadh, Saudi Arabia" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ t.locationArLabel }}</label>
+            <input type="text" class="glass-input" [(ngModel)]="userData.locationAr" placeholder="الرياض، المملكة العربية السعودية" />
+          </div>
+        </div>
+
+        <div class="save-button-row">
+          <button class="save-btn" (click)="saveProfile()" [disabled]="isSaving">
+            <i class="fa-solid fa-floppy-disk" *ngIf="!isSaving"></i>
+            <span>{{ isSaving ? t.saving : t.save }}</span>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 3: SOCIAL LINKS -->
+    <div class="tab-pane-wrapper" *ngIf="activeTab === 'social'">
+      <section class="glass-card section-box">
+        <div class="form-inputs-grid">
+          <div class="form-group">
+            <label>{{ t.whatsAppLabel }}</label>
+            <input type="text" class="glass-input" [(ngModel)]="userData.whatsApp" placeholder="https://wa.me/966500000000" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ t.websiteLabel }}</label>
+            <input type="url" class="glass-input" [(ngModel)]="userData.website" placeholder="https://7pixel.com.sa" />
+          </div>
+
+          <div class="form-group full-width">
+            <label>{{ t.linkedInLabel }}</label>
+            <input type="url" class="glass-input" [(ngModel)]="userData.linkedIn" placeholder="https://linkedin.com/in/username" />
+          </div>
+        </div>
+
+        <div class="save-button-row">
+          <button class="save-btn" (click)="saveProfile()" [disabled]="isSaving">
+            <i class="fa-solid fa-floppy-disk" *ngIf="!isSaving"></i>
+            <span>{{ isSaving ? t.saving : t.save }}</span>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 4: SKILLS -->
+    <div class="tab-pane-wrapper" *ngIf="activeTab === 'skills'">
+      <section class="glass-card section-box">
+        <div class="add-row mb-4">
+          <input type="text" class="glass-input" [(ngModel)]="newSkill" placeholder="Enter skill name..." (keyup.enter)="addSkill()" />
+          <button class="save-btn small" (click)="addSkill()">
+            <i class="fa-solid fa-plus"></i>
+            <span>{{ t.addSkillBtn }}</span>
+          </button>
+        </div>
+
+        <div class="skills-manage-flex">
+          <div class="manage-pill" *ngFor="let skill of userData.skills; let i = index">
+            <span>{{ skill }}</span>
+            <button class="remove-btn" (click)="removeSkill(i)"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+
+        <div class="save-button-row mt-6">
+          <button class="save-btn" (click)="saveProfile()" [disabled]="isSaving">
+            <i class="fa-solid fa-floppy-disk" *ngIf="!isSaving"></i>
+            <span>{{ isSaving ? t.saving : t.save }}</span>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 5: EXPERIENCE -->
+    <div class="tab-pane-wrapper" *ngIf="activeTab === 'experience'">
+      <section class="glass-card section-box">
+        <div class="add-form-box mb-4">
+          <h4><i class="fa-solid fa-plus-circle"></i> Add New Experience</h4>
+          <div class="form-inputs-grid mt-2">
+            <div class="form-group">
+              <input type="text" class="glass-input" [(ngModel)]="newExp.titleEn" placeholder="Job Title (English)" />
+            </div>
+            <div class="form-group">
+              <input type="text" class="glass-input" [(ngModel)]="newExp.titleAr" placeholder="المسمى الوظيفي (عربي)" />
+            </div>
+            <div class="form-group">
+              <input type="text" class="glass-input" [(ngModel)]="newExp.companyEn" placeholder="Company (English)" />
+            </div>
+            <div class="form-group">
+              <input type="text" class="glass-input" [(ngModel)]="newExp.companyAr" placeholder="الشركة (عربي)" />
+            </div>
+          </div>
+          <button class="save-btn small mt-3" (click)="addExperience()">
+            <i class="fa-solid fa-plus"></i> {{ t.addExpBtn }}
+          </button>
+        </div>
+
+        <div class="items-list">
+          <div class="list-card-item" *ngFor="let exp of userData.experiences; let i = index">
+            <div>
+              <h5>{{ exp.titleEn || exp.titleAr }}</h5>
+              <p>{{ exp.companyEn || exp.companyAr }}</p>
+            </div>
+            <button class="remove-btn" (click)="removeExperience(i)"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
+        </div>
+
+        <div class="save-button-row mt-6">
+          <button class="save-btn" (click)="saveProfile()" [disabled]="isSaving">
+            <i class="fa-solid fa-floppy-disk" *ngIf="!isSaving"></i>
+            <span>{{ isSaving ? t.saving : t.save }}</span>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 6: EDUCATION -->
+    <div class="tab-pane-wrapper" *ngIf="activeTab === 'education'">
+      <section class="glass-card section-box">
+        <div class="add-form-box mb-4">
+          <h4><i class="fa-solid fa-plus-circle"></i> Add New Education</h4>
+          <div class="form-inputs-grid mt-2">
+            <div class="form-group">
+              <input type="text" class="glass-input" [(ngModel)]="newEdu.degreeEn" placeholder="Degree (e.g. Bachelor's)" />
+            </div>
+            <div class="form-group">
+              <input type="text" class="glass-input" [(ngModel)]="newEdu.degreeAr" placeholder="الشهادة (مثال: بكالوريوس)" />
+            </div>
+            <div class="form-group">
+              <input type="text" class="glass-input" [(ngModel)]="newEdu.fieldEn" placeholder="Field of Study (English)" />
+            </div>
+            <div class="form-group">
+              <input type="text" class="glass-input" [(ngModel)]="newEdu.fieldAr" placeholder="التخصص (عربي)" />
+            </div>
+          </div>
+          <button class="save-btn small mt-3" (click)="addEducation()">
+            <i class="fa-solid fa-plus"></i> {{ t.addEduBtn }}
+          </button>
+        </div>
+
+        <div class="items-list">
+          <div class="list-card-item" *ngFor="let edu of userData.educations; let i = index">
+            <div>
+              <h5>{{ edu.degreeEn || edu.degreeAr }}</h5>
+              <p>{{ edu.fieldEn || edu.fieldAr }}</p>
+            </div>
+            <button class="remove-btn" (click)="removeEducation(i)"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
+        </div>
+
+        <div class="save-button-row mt-6">
+          <button class="save-btn" (click)="saveProfile()" [disabled]="isSaving">
+            <i class="fa-solid fa-floppy-disk" *ngIf="!isSaving"></i>
+            <span>{{ isSaving ? t.saving : t.save }}</span>
+          </button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- DIGITAL CARD PREVIEW MODAL -->
+  <div class="modal-overlay" *ngIf="showPreviewModal" (click)="togglePreviewModal()">
+    <div class="modal-card-wrapper" (click)="$event.stopPropagation()">
+      <button class="modal-close-btn" (click)="togglePreviewModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="phone-card-container">
+        <div class="card-banner" [style.background-image]="userData.backgroundPhoto ? 'url(' + userData.backgroundPhoto + ')' : null"></div>
+        <div class="card-avatar-section">
+          <div class="avatar-ring">
+            <img [src]="userData.profilePhoto || 'https://ui-avatars.com/api/?name=' + userDisplayName + '&background=1d8cf8&color=fff'" alt="Avatar" class="avatar-img" />
+          </div>
+          <h2 class="card-name">{{ userDisplayName }}</h2>
+          <p class="card-title" *ngIf="userJobTitle">{{ userJobTitle }} <span *ngIf="userCompany">@ {{ userCompany }}</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
