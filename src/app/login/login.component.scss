@@ -20,13 +20,13 @@
   z-index: 1;
 }
 
-/* Top Bar: Back to Card on LEFT, Language Button on RIGHT */
+/* Top Bar: Flex layout adapts dynamically to LTR and RTL */
 .top-bar {
   position: relative;
   z-index: 10;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Ensures Left/Right separation */
+  justify-content: space-between;
   padding: 1.5rem 2.2rem;
   width: 100%;
 
@@ -128,7 +128,7 @@
   color: #4ade80;
 }
 
-/* Form Fields */
+/* Form Fields - Dual RTL / LTR Support */
 .login-form {
   display: flex;
   flex-direction: column;
@@ -142,7 +142,6 @@
 
   .field-icon {
     position: absolute;
-    left: 1.1rem;
     color: #64748b;
     font-size: 1rem;
     pointer-events: none;
@@ -155,7 +154,6 @@
     background: #172133;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
-    padding: 0 1rem 0 2.9rem;
     font-size: 0.925rem;
     color: #ffffff;
     font-family: inherit;
@@ -174,6 +172,38 @@
 
     &::placeholder {
       color: #64748b;
+    }
+  }
+}
+
+/* LTR Specific Alignments */
+.login-wrapper[dir="ltr"] {
+  font-family: 'Inter', sans-serif;
+
+  .input-field {
+    .field-icon {
+      left: 1.1rem;
+    }
+
+    .form-input {
+      padding: 0 1rem 0 2.9rem;
+      text-align: left;
+    }
+  }
+}
+
+/* RTL Specific Alignments */
+.login-wrapper[dir="rtl"] {
+  font-family: 'Cairo', sans-serif;
+
+  .input-field {
+    .field-icon {
+      right: 1.1rem;
+    }
+
+    .form-input {
+      padding: 0 2.9rem 0 1rem;
+      text-align: right;
     }
   }
 }

@@ -1,15 +1,15 @@
-<div class="login-wrapper" dir="ltr">
+<div class="login-wrapper" [attr.dir]="dir">
   <!-- Interactive Constellation Network Canvas -->
   <canvas #particleCanvas class="interactive-canvas"></canvas>
 
   <!-- Top Bar: Back to Card on Left, Language button on Right -->
   <header class="top-bar">
     <a href="#" class="back-link">
-      <i class="fa-solid fa-arrow-left"></i>
-      <span>Back to Card</span>
+      <i [class]="currentLang === 'ar' ? 'fa-solid fa-arrow-right' : 'fa-solid fa-arrow-left'"></i>
+      <span>{{ t.backToCard }}</span>
     </a>
 
-    <button class="lang-btn" title="Translate / Language">
+    <button class="lang-btn" (click)="toggleLanguage()" [title]="currentLang === 'en' ? 'تغيير إلى العربية' : 'Switch to English'">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="m5 8 6 6"/>
         <path d="m4 14 6-6 2-3"/>
@@ -24,8 +24,8 @@
   <!-- Central Form Card -->
   <main class="login-center">
     <div class="login-card">
-      <h1 class="login-title">Admin Login</h1>
-      <p class="login-subtitle">Sign in to access the dashboard</p>
+      <h1 class="login-title">{{ t.title }}</h1>
+      <p class="login-subtitle">{{ t.subtitle }}</p>
 
       <!-- Alert Error Message -->
       <div class="alert-box alert-error" *ngIf="errorMessage">
@@ -47,7 +47,7 @@
             type="email"
             name="email"
             class="form-input"
-            placeholder="admin@example.com"
+            [placeholder]="t.emailPlaceholder"
             [(ngModel)]="email"
             required
             autocomplete="email"
@@ -61,7 +61,7 @@
             [type]="showPassword ? 'text' : 'password'"
             name="password"
             class="form-input"
-            placeholder="••••••••"
+            [placeholder]="t.passwordPlaceholder"
             [(ngModel)]="password"
             required
             autocomplete="current-password"
@@ -70,8 +70,8 @@
 
         <!-- Submit Button -->
         <button type="submit" class="sign-in-btn" [disabled]="isLoading">
-          <span *ngIf="!isLoading">Sign In</span>
-          <span *ngIf="isLoading"><i class="fa-solid fa-spinner fa-spin"></i> Signing in...</span>
+          <span *ngIf="!isLoading">{{ t.signIn }}</span>
+          <span *ngIf="isLoading"><i class="fa-solid fa-spinner fa-spin"></i> {{ t.signingIn }}</span>
         </button>
       </form>
     </div>

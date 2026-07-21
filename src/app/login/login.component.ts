@@ -23,6 +23,8 @@ interface Particle {
 export class Login implements AfterViewInit, OnDestroy {
   @ViewChild('particleCanvas') particleCanvas!: ElementRef<HTMLCanvasElement>;
 
+  currentLang: 'en' | 'ar' = 'en';
+
   email: string = '';
   password: string = '';
   showPassword: boolean = false;
@@ -36,10 +38,47 @@ export class Login implements AfterViewInit, OnDestroy {
   private particles: Particle[] = [];
   private mouse = { x: -1000, y: -1000, radius: 180 };
 
+  translations = {
+    en: {
+      backToCard: 'Back to Card',
+      title: 'Admin Login',
+      subtitle: 'Sign in to access the dashboard',
+      emailPlaceholder: 'admin@example.com',
+      passwordPlaceholder: '••••••••',
+      signIn: 'Sign In',
+      signingIn: 'Signing in...',
+      emptyError: 'Please enter email and password!',
+      invalidError: 'Invalid email or password!',
+      generalError: 'Login failed! Please check your credentials.',
+      success: 'Login successful!'
+    },
+    ar: {
+      backToCard: 'العودة للكرت',
+      title: 'تسجيل دخول المسؤول',
+      subtitle: 'قم بتسجيل الدخول للوصول إلى لوحة التحكم',
+      emailPlaceholder: 'admin@example.com',
+      passwordPlaceholder: '••••••••',
+      signIn: 'تسجيل الدخول',
+      signingIn: 'جاري تسجيل الدخول...',
+      emptyError: 'يرجى إدخال البريد الإلكتروني وكلمة المرور!',
+      invalidError: 'البريد الإلكتروني أو كلمة المرور غير صحيحة!',
+      generalError: 'حدث خطأ في عملية تسجيل الدخول، يرجى المحاولة لاحقاً.',
+      success: 'تم تسجيل الدخول بنجاح!'
+    }
+  };
+
   constructor(
     private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
+
+  get t() {
+    return this.translations[this.currentLang];
+  }
+
+  get dir() {
+    return this.currentLang === 'ar' ? 'rtl' : 'ltr';
+  }
 
   ngAfterViewInit() {
     if (isPlatformBrowser(this.platformId)) {
@@ -58,13 +97,21 @@ export class Login implements AfterViewInit, OnDestroy {
     }
   }
 
+  toggleLanguage() {
+    this.currentLang = this.currentLang === 'en' ? 'ar' : 'en';
+    if (isPlatformBrowser(this.platformId)) {
+      document.documentElement.setAttribute('dir', this.currentLang === 'ar' ? 'rtl' : 'ltr');
+      document.documentElement.setAttribute('lang', this.currentLang);
+    }
+  }
+
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
   }
 
   onSubmit() {
     if (!this.email || !this.password) {
-      this.errorMessage = 'Please enter email and password!';
+      this.errorMessage = this.t.emptyError;
       return;
     }
 
@@ -80,7 +127,7 @@ export class Login implements AfterViewInit, OnDestroy {
     this.http.post<any>(this.apiUrl, payload).subscribe({
       next: (response) => {
         this.isLoading = false;
-        this.successMessage = 'Login successful!';
+        this.successMessage = this.t.success;
         console.log('Login success:', response);
 
         if (response.token) {
@@ -102,9 +149,9 @@ export class Login implements AfterViewInit, OnDestroy {
         } else if (error.error?.message) {
           this.errorMessage = error.error.message;
         } else if (error.status === 401) {
-          this.errorMessage = 'Invalid email or password!';
+          this.errorMessage = this.t.invalidError;
         } else {
-          this.errorMessage = 'Login failed! Please check your credentials.';
+          this.errorMessage = this.t.generalError;
         }
       }
     });
