@@ -32,7 +32,7 @@ export class Login implements AfterViewInit, OnDestroy {
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
-  // Backend Swagger Auth API URL
+  // Backend Auth Login API URL
   private readonly apiUrl = 'https://localhost:44367/api/Auth/login';
   private ctx: CanvasRenderingContext2D | null = null;
   private animId: number = 0;
@@ -50,8 +50,7 @@ export class Login implements AfterViewInit, OnDestroy {
       signingIn: 'Signing in...',
       emptyError: 'Please enter email and password!',
       invalidError: 'Invalid email or password!',
-      notAdminError: 'Access Denied! Only Admin users can access this system.',
-      generalError: 'Login failed! Please check your credentials or backend API.',
+      generalError: 'Login failed! Please check your credentials or backend server.',
       success: 'Login successful! Token saved.'
     },
     ar: {
@@ -64,8 +63,7 @@ export class Login implements AfterViewInit, OnDestroy {
       signingIn: 'جاري تسجيل الدخول...',
       emptyError: 'يرجى إدخال البريد الإلكتروني وكلمة المرور!',
       invalidError: 'البريد الإلكتروني أو كلمة المرور غير صحيحة!',
-      notAdminError: 'عفواً، هذا الحساب ليس لديه صلاحيات الأدمن (Admin)!',
-      generalError: 'حدث خطأ في عملية تسجيل الدخول، يرجى المحاولة لاحقاً.',
+      generalError: 'حدث خطأ في عملية تسجيل الدخول، يرجى التأكد من تشغيل الباك اند.',
       success: 'تم تسجيل الدخول بنجاح وتخزين التوكن!'
     }
   };
@@ -132,29 +130,25 @@ export class Login implements AfterViewInit, OnDestroy {
         this.isLoading = false;
         console.log('Login API Response:', response);
 
-        const roles: string[] = response.user?.roles || response.roles || [];
-        const isAdmin = roles.some(role =>
-          role.toLowerCase().includes('admin') || role === 'Admin' || role === 'SuperAdmin'
-        );
+        const userId = response.userId || response.id || response.user?.id;
 
         if (response.token) {
           localStorage.setItem('token', response.token);
         }
-        if (response.userId || response.id) {
-          localStorage.setItem('userId', response.userId || response.id);
+        if (userId) {
+          localStorage.setItem('userId', userId);
         }
         if (response.user) {
           localStorage.setItem('user', JSON.stringify(response.user));
         }
 
-        if (isAdmin || roles.length === 0) {
-          this.successMessage = this.t.success;
-        } else {
-          this.errorMessage = this.t.notAdminError;
-        }
+        // Display success message cleanly without any errors or forced page navigation
+        this.errorMessage = null;
+        this.successMessage = this.t.success;
       },
       error: (error) => {
         this.isLoading = false;
+        this.successMessage = null;
         console.error('Login error:', error);
 
         if (typeof error.error === 'string') {
