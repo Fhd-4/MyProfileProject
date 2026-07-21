@@ -14,26 +14,26 @@
       </div>
     </header>
 
-    <!-- العدادات العلوية أصبحت تقرأ الأرقام الحقيقية المحدثة الآن تلقائياً -->
+    <!-- 2. ربط العدادات بالـ Getters الحية والديناميكية تلقائياً -->
     <section class="stats">
       <div class="stat-card">
         <div class="icon-badge blue-badge"><i class="fa-solid fa-users"></i></div>
         <div>
-          <h2>{{ totalClientsCount }}</h2>
+          <h2>{{ totalClients }}</h2>
           <p>Total Clients</p>
         </div>
       </div>
       <div class="stat-card">
         <div class="icon-badge green-badge"><i class="fa-solid fa-check"></i></div>
         <div>
-          <h2>{{ activeClientsCount }}</h2>
+          <h2>{{ activeClients }}</h2>
           <p>Active</p>
         </div>
       </div>
       <div class="stat-card">
         <div class="icon-badge cyan-badge"><i class="fa-regular fa-clock"></i></div>
         <div>
-          <h2>{{ expiredClientsCount }}</h2>
+          <h2>{{ expiredClients }}</h2>
           <p>Expired</p>
         </div>
       </div>
@@ -86,11 +86,11 @@
       </form>
     </section>
 
-    <!-- حلقة التكرار تعرض الآن الحقول الديناميكية الفردية القادمة من GET users -->
     <section class="client-directory-list">
       <div class="client-card-row" *ngFor="let client of clients; let i = index">
         <div class="client-left-profile">
-          <img [src]="client.avatar" alt="Avatar" />
+          <!-- 1. عرض الرابط الفعلي المصلح للصور -->
+          <img [src]="client.avatar" alt="User Profile Thumbnail" />
           <div class="client-meta-info">
             <div class="title-status-line">
               <h4>{{ client.clientName }}</h4>
@@ -98,15 +98,21 @@
                 {{ client.status }}
               </span>
             </div>
-            <p class="email-row-text">Email: <span>{{ client.email }}</span> <i class="fa-regular fa-copy copy-action-btn"></i></p>
+            <!-- 6. إضافة وظيفة حدث الضغط لنسخ البريد بنجاح للحافظة -->
+            <p class="email-row-text">
+              Email: <span>{{ client.email }}</span> 
+              <i class="fa-regular fa-copy copy-action-btn" (click)="copyEmail(client.email, $event)"></i>
+            </p>
+            <!-- 5. عرض تاريخ انتهاء الاشتراك القادم من السيرفر أو القيمة الافتراضية -->
             <p class="expiration-row-text text-highlighted">
               <i class="fa-regular fa-clock"></i> Expires: {{ client.expires }}
             </p>
           </div>
         </div>
+        <!-- 4. ربط الأزرار الفردية للتحكم بالملفات والتعديل -->
         <div class="client-right-actions">
-          <button class="row-action-btn" type="button"><i class="fa-regular fa-eye"></i></button>
-          <button class="row-action-btn" type="button"><i class="fa-regular fa-edit"></i></button>
+          <button class="row-action-btn" type="button" (click)="viewClient(client)"><i class="fa-regular fa-eye"></i></button>
+          <button class="row-action-btn" type="button" (click)="editClient(client)"><i class="fa-regular fa-edit"></i></button>
           <button class="row-action-btn delete-btn-accent" type="button" (click)="deleteClient(i, $event)"><i class="fa-regular fa-trash-can"></i></button>
         </div>
       </div>

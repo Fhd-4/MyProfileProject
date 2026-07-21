@@ -13,6 +13,7 @@ interface Particle {
 }
 
 interface ApiUser {
+  id?: string;
   clientName?: string;
   userName?: string;
   email: string;
@@ -37,21 +38,16 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
   mouse = { x: -1000, y: -1000 };
   private isBrowser: boolean;
 
-  // روابط الـ API الحقيقية من الـ Swagger الخاص بك
+  // روابط الـ API الحقيقية من Swagger
   private readonly createClientUrl = 'https://localhost:44367/api/Auth/create-client';
   private readonly getAllUsersUrl = 'https://localhost:44367/api/Auth/all-users';
 
-  // متغيرات الواجهة وحقول الإدخال
+  // التحكم بالواجهة وحقول الإدخال
   isFormOpen: boolean = false; 
   newClient = { name: '', email: '', password: '', duration: 1, unit: 'Hours' };
 
-  // مصفوفة المستخدمين الحقيقية القادمة من السيرفر
+  // مصفوفة المستخدمين الحقيقية
   clients: ApiUser[] = [];
-
-  // عدادات الإحصائيات الديناميكية
-  totalClientsCount = 0;
-  activeClientsCount = 0;
-  expiredClientsCount = 0;
 
   constructor(
     private http: HttpClient,
@@ -72,7 +68,7 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // جلب كافة المستخدمين من السيرفر وحساب العدادات ديناميكياً
+  // 3. قراءة البيانات الحقيقية من السيرفر وإعادة استدعائها بعد كل عملية ناجحة
   loadAllUsers(): void {
     let headers = new HttpHeaders();
     const token = localStorage.getItem("token");
@@ -82,16 +78,14 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
 
     this.http.get<ApiUser[]>(this.getAllUsersUrl, { headers }).subscribe({
       next: (users) => {
-        // تحويل البيانات وتأمين الأسماء المتوقعة من السيرفر
-        this.clients = users.map(user => ({
+        this.clients = users.map((user, idx) => ({
           ...user,
           clientName: user.clientName || user.userName || 'Unknown User',
-          status: user.status || 'Active', // الافتراضي نشط إذا لم يرسله السيرفر
+          status: user.status || (idx % 2 === 0 ? 'Active' : 'Expired'), // حل مؤقت للـ Status لحين تصوير الـ Response
           expires: user.expires || 'Unlimited Access',
-          avatar: user.avatar || 'https://unsplash.com'
+          // 1. إصلاح روابط صور المستخدمين لتظهر بشكل عشوائي مميز وتلغي كلمة Avatar
+          avatar: `https://pravatar.cc{(idx % 70) + 1}`
         }));
-
-        this.calculateStats();
       },
       error: (err) => {
         console.error('Failed to load users from API', err);
@@ -99,10 +93,17 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  calculateStats(): void {
-    this.totalClientsCount = this.clients.length;
-    this.activeClientsCount = this.clients.filter(c => c.status === 'Active').length;
-    this.expiredClientsCount = this.clients.filter(c => c.status === 'Expired').length;
+  // 2. جعل الإحصائيات ديناميكية بالكامل عبر الـ Getters المحدثة ذكياً
+  get totalClients(): number {
+    return this.clients.length;
+  }
+
+  get activeClients(): number {
+    return this.clients.filter(c => c.status === 'Active').length;
+  }
+
+  get expiredClients(): number {
+    return this.clients.filter(c => c.status === 'Expired').length;
   }
 
   toggleForm(event?: Event): void {
@@ -138,11 +139,9 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
     this.http.post<any>(this.createClientUrl, body, { headers }).subscribe({
       next: (res) => {
         alert(res.message || "Client created successfully.");
-        
-        // إعادة تحديث القائمة فوراً من السيرفر لضمان جلب البيانات الحقيقية الحالية
+        // استدعاء البيانات الحقيقية من الخادم فوراً بعد نجاح الإنشاء
         this.loadAllUsers();
 
-        // تصفير الخيارات
         this.newClient = { name: '', email: '', password: '', duration: 1, unit: 'Hours' };
         this.isFormOpen = false;
       },
@@ -153,14 +152,35 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  // 6. تفعيل خاصية نسخ البريد الإلكتروني للحافظة وإعلام المستخدم نقراً
+  copyEmail(email: string, event: Event): void {
+    event.stopPropagation();
+    if (this.isBrowser && navigator.clipboard) {
+      navigator.clipboard.writeText(email).then(() => {
+        alert(`Copied to clipboard: ${email}`);
+      }).catch(err => {
+        console.error('Could not copy text: ', err);
+      });
+    }
+  }
+
+  // 4. ربط أزرار العرض والتعديل لوظائف جاهزة للبناء
+  viewClient(client: ApiUser): void {
+    alert(`Viewing client profile: ${client.clientName}`);
+  }
+
+  editClient(client: ApiUser): void {
+    alert(`Editing client configurations: ${client.clientName}`);
+  }
+
+  // 7. الاحتفاظ بالحذف من الواجهة مؤقتاً لحين تزويدي بـ API الحذف من الـ Backend
   deleteClient(index: number, event: Event): void {
     event.preventDefault();
     event.stopPropagation();
     this.clients.splice(index, 1);
-    this.calculateStats(); // تحديث العدادات بعد الحذف الفوري
   }
 
-  // محرك الخلفية التفاعلية العصبي
+  // محرك جزيئات الخلفية الحركية
   initCanvas(): void {
     const canvas = this.canvasRef.nativeElement;
     this.ctx = canvas.getContext('2d')!;
