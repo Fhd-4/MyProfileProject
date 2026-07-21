@@ -2,7 +2,6 @@ import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, Inject, PLA
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
 
 interface Particle {
   x: number;
@@ -33,6 +32,7 @@ export class Login implements AfterViewInit, OnDestroy {
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
+  // Backend Swagger Auth API URL
   private readonly apiUrl = 'https://localhost:44367/api/Auth/login';
   private ctx: CanvasRenderingContext2D | null = null;
   private animId: number = 0;
@@ -50,9 +50,9 @@ export class Login implements AfterViewInit, OnDestroy {
       signingIn: 'Signing in...',
       emptyError: 'Please enter email and password!',
       invalidError: 'Invalid email or password!',
-      notAdminError: 'Access Denied! Only Admin users can access this dashboard.',
-      generalError: 'Login failed! Please check your credentials or server connection.',
-      success: 'Admin login successful! Redirecting...'
+      notAdminError: 'Access Denied! Only Admin users can access this system.',
+      generalError: 'Login failed! Please check your credentials or backend API.',
+      success: 'Login successful! Token saved.'
     },
     ar: {
       backToCard: 'العودة للكرت',
@@ -64,15 +64,14 @@ export class Login implements AfterViewInit, OnDestroy {
       signingIn: 'جاري تسجيل الدخول...',
       emptyError: 'يرجى إدخال البريد الإلكتروني وكلمة المرور!',
       invalidError: 'البريد الإلكتروني أو كلمة المرور غير صحيحة!',
-      notAdminError: 'عفواً، هذه اللوحة مخصصة للمدراء والمسؤولين (Admin) فقط!',
+      notAdminError: 'عفواً، هذا الحساب ليس لديه صلاحيات الأدمن (Admin)!',
       generalError: 'حدث خطأ في عملية تسجيل الدخول، يرجى المحاولة لاحقاً.',
-      success: 'تم تسجيل دخول الأدمن بنجاح! جاري التوجيه...'
+      success: 'تم تسجيل الدخول بنجاح وتخزين التوكن!'
     }
   };
 
   constructor(
     private http: HttpClient,
-    private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -131,7 +130,7 @@ export class Login implements AfterViewInit, OnDestroy {
     this.http.post<any>(this.apiUrl, payload).subscribe({
       next: (response) => {
         this.isLoading = false;
-        console.log('Login API response:', response);
+        console.log('Login API Response:', response);
 
         const roles: string[] = response.user?.roles || response.roles || [];
         const isAdmin = roles.some(role =>
@@ -149,13 +148,8 @@ export class Login implements AfterViewInit, OnDestroy {
         }
 
         if (isAdmin || roles.length === 0) {
-          // If user is Admin (or default fallback allow)
           this.successMessage = this.t.success;
-          setTimeout(() => {
-            this.router.navigate(['/admin']);
-          }, 600);
         } else {
-          // User is authenticated but NOT an Admin
           this.errorMessage = this.t.notAdminError;
         }
       },
