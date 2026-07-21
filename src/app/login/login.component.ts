@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, Inject, PLA
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 interface Particle {
   x: number;
@@ -32,7 +33,7 @@ export class Login implements AfterViewInit, OnDestroy {
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
-  private readonly apiUrl = 'https://localhost:7123/api/Auth/login';
+  private readonly apiUrl = 'https://localhost:44367/api/Auth/login';
   private ctx: CanvasRenderingContext2D | null = null;
   private animId: number = 0;
   private particles: Particle[] = [];
@@ -49,8 +50,9 @@ export class Login implements AfterViewInit, OnDestroy {
       signingIn: 'Signing in...',
       emptyError: 'Please enter email and password!',
       invalidError: 'Invalid email or password!',
-      generalError: 'Login failed! Please check your credentials.',
-      success: 'Login successful!'
+      notAdminError: 'Access Denied! Only Admin users can access this dashboard.',
+      generalError: 'Login failed! Please check your credentials or server connection.',
+      success: 'Admin login successful! Redirecting...'
     },
     ar: {
       backToCard: 'العودة للكرت',
@@ -62,13 +64,15 @@ export class Login implements AfterViewInit, OnDestroy {
       signingIn: 'جاري تسجيل الدخول...',
       emptyError: 'يرجى إدخال البريد الإلكتروني وكلمة المرور!',
       invalidError: 'البريد الإلكتروني أو كلمة المرور غير صحيحة!',
+      notAdminError: 'عفواً، هذه اللوحة مخصصة للمدراء والمسؤولين (Admin) فقط!',
       generalError: 'حدث خطأ في عملية تسجيل الدخول، يرجى المحاولة لاحقاً.',
-      success: 'تم تسجيل الدخول بنجاح!'
+      success: 'تم تسجيل دخول الأدمن بنجاح! جاري التوجيه...'
     }
   };
 
   constructor(
     private http: HttpClient,
+    private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -127,8 +131,12 @@ export class Login implements AfterViewInit, OnDestroy {
     this.http.post<any>(this.apiUrl, payload).subscribe({
       next: (response) => {
         this.isLoading = false;
-        this.successMessage = this.t.success;
-        console.log('Login success:', response);
+        console.log('Login API response:', response);
+
+        const roles: string[] = response.user?.roles || response.roles || [];
+        const isAdmin = roles.some(role =>
+          role.toLowerCase().includes('admin') || role === 'Admin' || role === 'SuperAdmin'
+        );
 
         if (response.token) {
           localStorage.setItem('token', response.token);
@@ -138,6 +146,17 @@ export class Login implements AfterViewInit, OnDestroy {
         }
         if (response.user) {
           localStorage.setItem('user', JSON.stringify(response.user));
+        }
+
+        if (isAdmin || roles.length === 0) {
+          // If user is Admin (or default fallback allow)
+          this.successMessage = this.t.success;
+          setTimeout(() => {
+            this.router.navigate(['/admin']);
+          }, 600);
+        } else {
+          // User is authenticated but NOT an Admin
+          this.errorMessage = this.t.notAdminError;
         }
       },
       error: (error) => {
