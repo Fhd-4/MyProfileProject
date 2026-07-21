@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, Inject, PLA
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 interface Particle {
   x: number;
@@ -51,7 +52,9 @@ export class Login implements AfterViewInit, OnDestroy {
       emptyError: 'Please enter email and password!',
       invalidError: 'Invalid email or password!',
       generalError: 'Login failed! Please check your credentials or backend server.',
-      success: 'Login successful! Token saved.'
+      superAdminSuccess: 'SuperAdmin login successful! Redirecting to SuperAdmin dashboard...',
+      adminSuccess: 'Admin login successful! Redirecting to Card page...',
+      userSuccess: 'Login successful! Redirecting to Card page...'
     },
     ar: {
       backToCard: 'العودة للكرت',
@@ -64,12 +67,15 @@ export class Login implements AfterViewInit, OnDestroy {
       emptyError: 'يرجى إدخال البريد الإلكتروني وكلمة المرور!',
       invalidError: 'البريد الإلكتروني أو كلمة المرور غير صحيحة!',
       generalError: 'حدث خطأ في عملية تسجيل الدخول، يرجى التأكد من تشغيل الباك اند.',
-      success: 'تم تسجيل الدخول بنجاح وتخزين التوكن!'
+      superAdminSuccess: 'تم تسجيل دخول السوبر أدمن بنجاح! جاري التوجيه لصفحة السوبر أدمن...',
+      adminSuccess: 'تم تسجيل دخول الأدمن بنجاح! جاري التوجيه لصفحة الكرت الخاصة بك...',
+      userSuccess: 'تم تسجيل الدخول بنجاح! جاري التوجيه لصفحة الكرت...'
     }
   };
 
   constructor(
     private http: HttpClient,
+    private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -131,7 +137,9 @@ export class Login implements AfterViewInit, OnDestroy {
         console.log('Login API Response:', response);
 
         const userId = response.userId || response.id || response.user?.id;
+        const roles: string[] = response.user?.roles || response.roles || [];
 
+        // Save session data in localStorage
         if (response.token) {
           localStorage.setItem('token', response.token);
         }
@@ -142,9 +150,35 @@ export class Login implements AfterViewInit, OnDestroy {
           localStorage.setItem('user', JSON.stringify(response.user));
         }
 
-        // Display success message cleanly without any errors or forced page navigation
         this.errorMessage = null;
-        this.successMessage = this.t.success;
+
+        // Check user roles
+        const isSuperAdmin = roles.some(role =>
+          role.toLowerCase() === 'superadmin' || role === 'SuperAdmin'
+        );
+        const isAdmin = roles.some(role =>
+          role.toLowerCase() === 'admin' || role === 'Admin'
+        );
+
+        if (isSuperAdmin) {
+          // If user is SuperAdmin -> redirect to /super-admin
+          this.successMessage = this.t.superAdminSuccess;
+          setTimeout(() => {
+            this.router.navigate(['/super-admin']);
+          }, 600);
+        } else if (isAdmin) {
+          // If user is Admin -> redirect to /card
+          this.successMessage = this.t.adminSuccess;
+          setTimeout(() => {
+            this.router.navigate(['/card']);
+          }, 600);
+        } else {
+          // Normal user -> redirect to /card
+          this.successMessage = this.t.userSuccess;
+          setTimeout(() => {
+            this.router.navigate(['/card']);
+          }, 600);
+        }
       },
       error: (error) => {
         this.isLoading = false;
