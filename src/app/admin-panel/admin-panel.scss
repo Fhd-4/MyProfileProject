@@ -1,0 +1,23 @@
+.container{
+    width:400px;
+    margin:40px auto;
+    display:flex;
+    flex-direction:column;
+}
+
+form{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+input,
+select{
+    padding:10px;
+    font-size:15px;
+}
+
+button{
+    padding:12px;
+    cursor:pointer;
+}

@@ -1,0 +1,51 @@
+<div class="container">
+
+  <h2>Add New Client</h2>
+
+  <form (ngSubmit)="createClient()">
+
+    <label>Client Name</label>
+    <input
+      type="text"
+      [(ngModel)]="client.clientName"
+      name="clientName">
+
+    <label>Email</label>
+    <input
+      type="email"
+      [(ngModel)]="client.email"
+      name="email">
+
+    <label>Password</label>
+    <input
+      type="password"
+      [(ngModel)]="client.password"
+      name="password">
+
+    <label>Duration</label>
+    <input
+      type="number"
+      [(ngModel)]="client.duration"
+      name="duration">
+
+    <label>Unit</label>
+
+    <select
+      [(ngModel)]="client.unit"
+      name="unit">
+
+      <option>Minute</option>
+      <option>Hour</option>
+      <option>Day</option>
+      <option>Month</option>
+      <option>Year</option>
+
+    </select>
+
+    <button type="submit">
+      Create Client
+    </button>
+
+  </form>
+
+</div>
