@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 interface Particle {
   x: number;
@@ -34,7 +35,7 @@ export class Login implements AfterViewInit, OnDestroy {
   successMessage: string | null = null;
 
   // Backend Auth Login API URL
-  private readonly apiUrl = 'https://localhost:44367/api/Auth/login';
+  private readonly apiUrl = `${environment.apiUrl}/Auth/login`;
   private ctx: CanvasRenderingContext2D | null = null;
   private animId: number = 0;
   private particles: Particle[] = [];

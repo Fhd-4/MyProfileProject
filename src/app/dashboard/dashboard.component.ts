@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 interface Particle {
   x: number;
@@ -61,8 +62,8 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   successMessage: string | null = null;
   showPreviewModal: boolean = false;
 
-  private readonly getApiUrl = 'https://localhost:44367/api/Profile/user/';
-  private readonly updateApiUrl = 'https://localhost:44367/api/Profile/me';
+  private readonly getApiUrl = `${environment.apiUrl}/Profile/user/`;
+  private readonly updateApiUrl = `${environment.apiUrl}/Profile/me`;
 
   private ctx: CanvasRenderingContext2D | null = null;
   private animId: number = 0;

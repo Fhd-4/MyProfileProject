@@ -2,6 +2,7 @@ import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, Inject, PLA
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 interface Particle {
   x: number;
@@ -39,8 +40,8 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
   private isBrowser: boolean;
 
   // روابط الـ API الحقيقية من Swagger
-  private readonly createClientUrl = 'https://localhost:44367/api/Auth/create-client';
-  private readonly getAllUsersUrl = 'https://localhost:44367/api/Auth/all-users';
+  private readonly createClientUrl = `${environment.apiUrl}/Auth/create-client`;
+  private readonly getAllUsersUrl = `${environment.apiUrl}/Auth/all-users`;
 
   // التحكم بالواجهة وحقول الإدخال
   isFormOpen: boolean = false; 
