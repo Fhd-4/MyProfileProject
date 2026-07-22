@@ -52,7 +52,8 @@ export class Login implements AfterViewInit, OnDestroy {
       emptyError: 'Please enter email and password!',
       invalidError: 'Invalid email or password!',
       generalError: 'Login failed! Please check your credentials or backend server.',
-      success: 'Login successful! Redirecting to Dashboard...'
+      success: 'Login successful! Redirecting to Dashboard...',
+      superAdminSuccess: 'SuperAdmin login successful! Redirecting to Admin Panel...'
     },
     ar: {
       backToCard: 'العودة للكرت',
@@ -65,7 +66,8 @@ export class Login implements AfterViewInit, OnDestroy {
       emptyError: 'يرجى إدخال البريد الإلكتروني وكلمة المرور!',
       invalidError: 'البريد الإلكتروني أو كلمة المرور غير صحيحة!',
       generalError: 'حدث خطأ في عملية تسجيل الدخول، يرجى التأكد من تشغيل الباك اند.',
-      success: 'تم تسجيل الدخول بنجاح! جاري التوجيه للوحة التحكم...'
+      success: 'تم تسجيل الدخول بنجاح! جاري التوجيه للوحة التحكم...',
+      superAdminSuccess: 'تم تسجيل دخول السوبر أدمن بنجاح! جاري التوجيه للوحة الإدارة...'
     }
   };
 
@@ -145,12 +147,24 @@ export class Login implements AfterViewInit, OnDestroy {
         }
 
         this.errorMessage = null;
-        this.successMessage = this.t.success;
 
-        // Redirect to Dashboard
-        setTimeout(() => {
-          this.router.navigate(['/dashboard']);
-        }, 500);
+        const roles: string[] = response.user?.roles || response.roles || [];
+        const isSuperAdmin = roles.some(role => {
+          const r = role.toLowerCase();
+          return r === 'superadmin' || r === 'super-admin' || r === 'super_admin';
+        });
+
+        if (isSuperAdmin) {
+          this.successMessage = this.t.superAdminSuccess;
+          setTimeout(() => {
+            this.router.navigate(['/admin-panel']);
+          }, 600);
+        } else {
+          this.successMessage = this.t.success;
+          setTimeout(() => {
+            this.router.navigate(['/dashboard']);
+          }, 600);
+        }
       },
       error: (error) => {
         this.isLoading = false;
