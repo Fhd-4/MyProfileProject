@@ -1,122 +1,132 @@
 <div class="admin-wrapper" dir="ltr">
+  <!-- Interactive particle engine canvas pipeline -->
   <canvas #particleCanvas class="interactive-canvas"></canvas>
 
   <div class="container">
-    
+    <!-- HEADER -->
     <header class="page-header">
       <div class="title">
         <div class="polygon-logo"></div>
         <h1>Admin Panel</h1>
       </div>
       <div class="actions">
-        <button class="icon-btn" type="button"><i class="fa-solid fa-language"></i></button>
-        <button class="icon-btn" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+        <!-- Fixed Issue #3: Hooked up translation event loop trigger -->
+        <button class="icon-btn" (click)="toggleLanguage()" aria-label="Toggle Language">
+          <i class="fa-solid fa-language"></i>
+        </button>
+        <button class="icon-btn" aria-label="Logout">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
       </div>
     </header>
 
-    <!-- 2. ربط العدادات بالـ Getters الحية والديناميكية تلقائياً -->
+    <!-- STATISTICS METRICS OVERVIEW -->
     <section class="stats">
       <div class="stat-card">
         <div class="icon-badge blue-badge"><i class="fa-solid fa-users"></i></div>
         <div>
-          <h2>{{ totalClients }}</h2>
+          <h2>{{totalClients}}</h2>
           <p>Total Clients</p>
         </div>
       </div>
       <div class="stat-card">
         <div class="icon-badge green-badge"><i class="fa-solid fa-check"></i></div>
         <div>
-          <h2>{{ activeClients }}</h2>
+          <h2>{{activeClients}}</h2>
           <p>Active</p>
         </div>
       </div>
       <div class="stat-card">
         <div class="icon-badge cyan-badge"><i class="fa-regular fa-clock"></i></div>
         <div>
-          <h2>{{ expiredClients }}</h2>
+          <h2>{{expiredClients}}</h2>
           <p>Expired</p>
         </div>
       </div>
     </section>
 
+    <!-- ACTION BUTTON -->
     <div class="action-trigger-row">
-      <button class="add-btn" type="button" (click)="toggleForm($event)">
+      <button class="add-btn" (click)="toggleForm($event)">
         <i class="fa-solid fa-user-plus"></i> Add New Client
       </button>
     </div>
 
+    <!-- CREATE CLIENT FORM DRAWER -->
     <section class="form-panel" *ngIf="isFormOpen">
       <h3>Create New Client</h3>
       <form (ngSubmit)="onSubmitClient($event)">
         <div class="form-row rows-2">
           <div class="input-group">
             <label>Client Name</label>
-            <input type="text" name="name" [(ngModel)]="newClient.name" placeholder="Ahmed Ali" required />
+            <input name="name" [(ngModel)]="newClient.name" placeholder="Ahmed Ali" required>
           </div>
           <div class="input-group">
             <label>Email</label>
-            <input type="email" name="email" [(ngModel)]="newClient.email" placeholder="client@example.com" required />
+            <input type="email" name="email" [(ngModel)]="newClient.email" placeholder="client@email.com" required>
           </div>
         </div>
 
         <div class="form-row rows-3">
           <div class="input-group">
             <label>Password</label>
-            <input type="password" name="password" [(ngModel)]="newClient.password" placeholder="••••••••" required />
+            <input type="password" name="password" [(ngModel)]="newClient.password" required>
           </div>
           <div class="input-group">
             <label>Duration</label>
-            <input type="number" name="duration" [(ngModel)]="newClient.duration" />
+            <input type="number" name="duration" [(ngModel)]="newClient.duration">
           </div>
           <div class="input-group">
             <label>Unit</label>
             <select name="unit" [(ngModel)]="newClient.unit">
-              <option value="Hours">Hours</option>
-              <option value="Days">Days</option>
-              <option value="Months">Months</option>
-              <option value="Years">Years</option>
+              <option>Days</option>
+              <option>Months</option>
+              <option>Years</option>
             </select>
           </div>
         </div>
 
         <div class="form-actions-buttons">
-          <button type="submit" class="submit-btn">Create</button>
+          <button class="submit-btn" type="submit">Create</button>
           <button type="button" class="cancel-btn" (click)="toggleForm($event)">Cancel</button>
         </div>
       </form>
     </section>
 
+    <!-- CLIENT DIRECTORY CARDS -->
     <section class="client-directory-list">
-      <div class="client-card-row" *ngFor="let client of clients; let i = index">
+      <div class="client-card-row" *ngFor="let client of clients; let i=index; trackBy: trackByClientId">
         <div class="client-left-profile">
-          <!-- 1. عرض الرابط الفعلي المصلح للصور -->
-          <img [src]="client.avatar" alt="User Profile Thumbnail" />
+          <!-- Fallback image source prevents broken image frames -->
+          <img [src]="client.avatar" [alt]="client.clientName" (error)="client.avatar = 'assets/images/avatar.png'">
+          
           <div class="client-meta-info">
             <div class="title-status-line">
-              <h4>{{ client.clientName }}</h4>
-              <span class="status-badge" [ngClass]="client.status === 'Active' ? 'badge-active' : 'badge-expired'">
-                {{ client.status }}
+              <h4>{{client.clientName}}</h4>
+              <span class="status-badge" [ngClass]="{'badge-expired': client.status === 'Expired'}">
+                {{client.status}}
               </span>
             </div>
-            <!-- 6. إضافة وظيفة حدث الضغط لنسخ البريد بنجاح للحافظة -->
+            
+            <!-- Fixed Issue #5: Added target context indicator line underneath client title header -->
+            <p class="client-role">Client</p> 
+
             <p class="email-row-text">
-              Email: <span>{{ client.email }}</span> 
-              <i class="fa-regular fa-copy copy-action-btn" (click)="copyEmail(client.email, $event)"></i>
+              Email: <span>{{client.email}}</span>
+              <i class="fa-regular fa-copy copy-action-btn" (click)="copyEmail(client.email,$event)"></i>
             </p>
-            <!-- 5. عرض تاريخ انتهاء الاشتراك القادم من السيرفر أو القيمة الافتراضية -->
-            <p class="expiration-row-text text-highlighted">
-              <i class="fa-regular fa-clock"></i> Expires: {{ client.expires }}
+            <p class="expiration-row-text">
+              <i class="fa-regular fa-clock"></i> Expires: {{client.expires}}
             </p>
           </div>
         </div>
-        <!-- 4. ربط الأزرار الفردية للتحكم بالملفات والتعديل -->
+        
         <div class="client-right-actions">
-          <button class="row-action-btn" type="button" (click)="viewClient(client)"><i class="fa-regular fa-eye"></i></button>
-          <button class="row-action-btn" type="button" (click)="editClient(client)"><i class="fa-regular fa-edit"></i></button>
-          <button class="row-action-btn delete-btn-accent" type="button" (click)="deleteClient(i, $event)"><i class="fa-regular fa-trash-can"></i></button>
+          <button class="row-action-btn" (click)="viewClient(client)" aria-label="View"><i class="fa-regular fa-eye"></i></button>
+          <button class="row-action-btn" (click)="editClient(client)" aria-label="Edit"><i class="fa-regular fa-edit"></i></button>
+          <button class="row-action-btn delete-btn-accent" (click)="deleteClient(i,$event)" aria-label="Delete"><i class="fa-regular fa-trash-can"></i></button>
         </div>
       </div>
     </section>
-
   </div>
 </div>

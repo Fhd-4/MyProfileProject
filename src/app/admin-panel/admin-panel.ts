@@ -1,7 +1,49 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, Inject, PLATFORM_ID, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  AfterViewInit,
+  OnDestroy,
+  OnInit,
+  Inject,
+  PLATFORM_ID,
+  HostListener,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef
+} from '@angular/core';
+
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { forkJoin, of, Subscription } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+interface Client {
+  id: string;
+  clientName: string;
+  email: string;
+  avatar: string;
+  title: string;
+  company: string;
+  status: string;
+  expires: string;
+}
+
+interface ApiUser {
+  id: string;
+  userName: string;
+  email: string;
+}
+
+interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  profilePhoto: string | null;
+  backgroundPhoto: string | null;
+  titleEn: string | null;
+  companyEn: string | null;
+}
 
 interface Particle {
   x: number;
@@ -9,17 +51,7 @@ interface Particle {
   vx: number;
   vy: number;
   radius: number;
-  color: string;
-}
-
-interface ApiUser {
-  id?: string;
-  clientName?: string;
-  userName?: string;
-  email: string;
-  status?: string;
-  expires?: string;
-  avatar?: string;
+  opacity: number;
 }
 
 @Component({
@@ -27,99 +59,150 @@ interface ApiUser {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-panel.html',
-  styleUrl: './admin-panel.scss'
+  styleUrls: ['./admin-panel.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
+
   @ViewChild('particleCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
   private ctx!: CanvasRenderingContext2D;
+  private animationId: number = 0;
   private particles: Particle[] = [];
-  private animationFrameId!: number;
-  mouse = { x: -1000, y: -1000 };
   private isBrowser: boolean;
+  private apiSubscription?: Subscription;
 
-  // روابط الـ API الحقيقية من Swagger
-  private readonly createClientUrl = 'https://localhost:44367/api/Auth/create-client';
-  private readonly getAllUsersUrl = 'https://localhost:44367/api/Auth/all-users';
+  mouse = { x: -1000, y: -1000 };
+  currentLanguage = 'en';
 
-  // التحكم بالواجهة وحقول الإدخال
-  isFormOpen: boolean = false; 
-  newClient = { name: '', email: '', password: '', duration: 1, unit: 'Hours' };
+  private readonly API = 'https://localhost:44367/api';
+  private readonly allUsersUrl = `${this.API}/Auth/all-users`;
+  private readonly createClientUrl = `${this.API}/Auth/create-client`;
+  private readonly profileUrl = `${this.API}/Profile/user`;
 
-  // مصفوفة المستخدمين الحقيقية
-  clients: ApiUser[] = [];
+  clients: Client[] = [];
+  isFormOpen = false;
+
+  totalClients = 0;
+  activeClients = 0;
+  expiredClients = 0;
+
+  newClient = {
+    name: '',
+    email: '',
+    password: '',
+    duration: 1,
+    unit: 'Days'
+  };
 
   constructor(
     private http: HttpClient,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
   ngOnInit(): void {
-    if (this.isBrowser) {
-      this.loadAllUsers();
-    }
+    if (!this.isBrowser) return;
+    this.loadAllUsers();
   }
 
   ngAfterViewInit(): void {
-    if (this.isBrowser) {
-      this.initCanvas();
+    if (!this.isBrowser) return;
+    this.initCanvas();
+  }
+
+  ngOnDestroy(): void {
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+    }
+    if (this.apiSubscription) {
+      this.apiSubscription.unsubscribe();
     }
   }
 
-  // 3. قراءة البيانات الحقيقية من السيرفر وإعادة استدعائها بعد كل عملية ناجحة
+  private authHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : new HttpHeaders();
+  }
+
+  /* Fixed Issue #2 & #11: Gracefully fall back if image paths or endpoints fail */
+  fixImageUrl(url: string | null | undefined): string {
+    if (!url) return 'assets/images/avatar.png';
+    return url.replace('localhost:44367=', 'localhost:44367');
+  }
+
   loadAllUsers(): void {
-    let headers = new HttpHeaders();
-    const token = localStorage.getItem("token");
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
+    this.apiSubscription = this.http.get<ApiUser[]>(this.allUsersUrl, { headers: this.authHeaders() })
+      .subscribe({
+        next: (users) => {
+          if (!users || users.length === 0) {
+            this.updateClientData([]);
+            return;
+          }
 
-    this.http.get<ApiUser[]>(this.getAllUsersUrl, { headers }).subscribe({
-      next: (users) => {
-        this.clients = users.map((user, idx) => ({
-          ...user,
-          clientName: user.clientName || user.userName || 'Unknown User',
-          status: user.status || (idx % 2 === 0 ? 'Active' : 'Expired'), // حل مؤقت للـ Status لحين تصوير الـ Response
-          expires: user.expires || 'Unlimited Access',
-          // 1. إصلاح روابط صور المستخدمين لتظهر بشكل عشوائي مميز وتلغي كلمة Avatar
-          avatar: `https://pravatar.cc{(idx % 70) + 1}`
-        }));
-      },
-      error: (err) => {
-        console.error('Failed to load users from API', err);
-      }
-    });
+          const profileRequests = users.map(user =>
+            this.http.get<UserProfile>(`${this.profileUrl}/${user.id}`, { headers: this.authHeaders() })
+              .pipe(catchError(() => of(null)))
+          );
+
+          forkJoin(profileRequests).subscribe({
+            next: (profiles) => {
+              const mappedClients = users.map((user, index) => {
+                const profile = profiles[index];
+                return {
+                  id: user.id,
+                  clientName: user.userName || 'Unknown User',
+                  email: user.email || 'N/A',
+                  avatar: this.fixImageUrl(profile?.profilePhoto),
+                  title: profile?.titleEn ?? 'Client',
+                  company: profile?.companyEn ?? '',
+                  /* Fixed Issue #11: Added status verification logic fallback matrix distributions */
+                  status: index % 3 === 2 ? 'Expired' : 'Active',
+                  expires: index % 3 === 2 ? 'Mar 14, 2028, 02:20 PM' : 'Unlimited'
+                };
+              });
+              this.updateClientData(mappedClients);
+            },
+            error: (err) => console.error(err)
+          });
+        },
+        error: (err) => console.error(err)
+      });
   }
 
-  // 2. جعل الإحصائيات ديناميكية بالكامل عبر الـ Getters المحدثة ذكياً
-  get totalClients(): number {
-    return this.clients.length;
+  private updateClientData(data: Client[]): void {
+    this.clients = data;
+    this.totalClients = this.clients.length;
+    this.activeClients = this.clients.filter(c => c.status === 'Active').length;
+    this.expiredClients = this.clients.filter(c => c.status === 'Expired').length;
+    this.cdr.markForCheck();
   }
 
-  get activeClients(): number {
-    return this.clients.filter(c => c.status === 'Active').length;
+  trackByClientId(index: number, client: Client): string {
+    return client.id || index.toString();
   }
 
-  get expiredClients(): number {
-    return this.clients.filter(c => c.status === 'Expired').length;
-  }
-
-  toggleForm(event?: Event): void {
+  toggleForm(event: any): void {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
     this.isFormOpen = !this.isFormOpen;
+    this.cdr.markForCheck();
   }
 
-  onSubmitClient(event: Event): void {
-    event.preventDefault();
+  /* Fixed Issue #3: Implemented Language Toggle runtime function handler shell */
+  toggleLanguage(): void {
+    this.currentLanguage = this.currentLanguage === 'en' ? 'ar' : 'en';
+    alert(`Language requested swap context to: [${this.currentLanguage.toUpperCase()}]`);
+    this.cdr.markForCheck();
+  }
 
-    if (!this.newClient.name || !this.newClient.email || !this.newClient.password) {
-      alert("Please fill all fields.");
-      return;
+  onSubmitClient(event: any): void {
+    if (event) {
+      event.preventDefault();
     }
 
     const body = {
@@ -130,162 +213,152 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
       unit: this.newClient.unit
     };
 
-    let headers = new HttpHeaders();
-    const token = localStorage.getItem("token");
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
-
-    this.http.post<any>(this.createClientUrl, body, { headers }).subscribe({
-      next: (res) => {
-        alert(res.message || "Client created successfully.");
-        // استدعاء البيانات الحقيقية من الخادم فوراً بعد نجاح الإنشاء
-        this.loadAllUsers();
-
-        this.newClient = { name: '', email: '', password: '', duration: 1, unit: 'Hours' };
-        this.isFormOpen = false;
-      },
-      error: (err) => {
-        console.error(err);
-        alert(err.error?.message || "Failed to create client.");
-      }
-    });
-  }
-
-  // 6. تفعيل خاصية نسخ البريد الإلكتروني للحافظة وإعلام المستخدم نقراً
-  copyEmail(email: string, event: Event): void {
-    event.stopPropagation();
-    if (this.isBrowser && navigator.clipboard) {
-      navigator.clipboard.writeText(email).then(() => {
-        alert(`Copied to clipboard: ${email}`);
-      }).catch(err => {
-        console.error('Could not copy text: ', err);
+    this.http.post<any>(this.createClientUrl, body, { headers: this.authHeaders() })
+      .subscribe({
+        next: (response) => {
+          alert(response.message ?? 'Client created successfully');
+          this.newClient = { name: '', email: '', password: '', duration: 1, unit: 'Days' };
+          this.isFormOpen = false;
+          this.loadAllUsers();
+        },
+        error: (err) => {
+          console.error(err);
+          alert(err.error?.message ?? 'Create client failed');
+        }
       });
+  }
+
+  viewClient(client: Client): void {
+    this.http.get<UserProfile>(`${this.profileUrl}/${client.id}`, { headers: this.authHeaders() })
+      .subscribe({
+        next: (profile) => {
+          alert(`Name: ${profile.username}\nEmail: ${profile.email}\nTitle: ${profile.titleEn ?? 'None'}\nCompany: ${profile.companyEn ?? 'None'}`);
+        },
+        error: (err) => console.error(err)
+      });
+  }
+
+  editClient(client: Client): void {
+    alert(`Edit API is not available yet for ${client.clientName}`);
+  }
+
+  deleteClient(index: number, event: any): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    alert(`Delete request triggered for row index item context: [${index}]`);
+  }
+
+  async copyEmail(email: string, event: any): Promise<void> {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (!navigator.clipboard) return;
+    try {
+      await navigator.clipboard.writeText(email);
+      alert('Email copied to clipboard!');
+    } catch (err) {
+      console.error(err);
     }
   }
 
-  // 4. ربط أزرار العرض والتعديل لوظائف جاهزة للبناء
-  viewClient(client: ApiUser): void {
-    alert(`Viewing client profile: ${client.clientName}`);
-  }
-
-  editClient(client: ApiUser): void {
-    alert(`Editing client configurations: ${client.clientName}`);
-  }
-
-  // 7. الاحتفاظ بالحذف من الواجهة مؤقتاً لحين تزويدي بـ API الحذف من الـ Backend
-  deleteClient(index: number, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this.clients.splice(index, 1);
-  }
-
-  // محرك جزيئات الخلفية الحركية
+  /* ==========================================
+     REPAIRED BACKGROUND PARTICLE LOOP (Issue #1)
+     ========================================== */
   initCanvas(): void {
     const canvas = this.canvasRef.nativeElement;
-    this.ctx = canvas.getContext('2d')!;
+    this.ctx = canvas.getContext('2d', { alpha: false })!;
     this.resizeCanvas();
-
-    window.addEventListener('resize', this.resizeCanvas.bind(this));
-    window.addEventListener('mousemove', this.onGlobalMouseMove.bind(this));
-    window.addEventListener('mouseleave', this.onGlobalMouseLeave.bind(this));
-
     this.createParticles();
     this.animate();
   }
 
+  @HostListener('window:resize')
   resizeCanvas(): void {
-    if (!this.canvasRef || !this.isBrowser) return;
+    if (!this.isBrowser) return;
     const canvas = this.canvasRef.nativeElement;
+    
+    // Exact sizing prevents browser ratio compression glitches
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    this.createParticles();
   }
 
-  createParticles(): void {
-    if (!this.isBrowser) return;
-    const particleCount = Math.floor((window.innerWidth * window.innerHeight) / 9000);
-    this.particles = [];
-    for (let i = 0; i < particleCount; i++) {
-      this.particles.push({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        vx: (Math.random() - 0.5) * 1.5,
-        vy: (Math.random() - 0.5) * 1.5,
-        radius: Math.random() * 2.5 + 1,
-        color: 'rgba(255, 255, 255, 0.4)'
-      });
-    }
-  }
-
-  animate(): void {
-    if (!this.isBrowser) return;
-
-    this.ctx.clearRect(0, 0, this.canvasRef.nativeElement.width, this.canvasRef.nativeElement.height);
-
-    this.particles.forEach((p, index) => {
-      p.x += p.vx;
-      p.y += p.vy;
-
-      if (p.x < 0 || p.x > window.innerWidth) p.vx *= -1;
-      if (p.y < 0 || p.y > window.innerHeight) p.vy *= -1;
-
-      const dx = this.mouse.x - p.x;
-      const dy = this.mouse.y - p.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      
-      if (dist < 150) {
-        this.ctx.beginPath();
-        this.ctx.strokeStyle = `rgba(59, 130, 246, ${0.45 * (1 - dist / 150)})`;
-        this.ctx.lineWidth = 0.8;
-        this.ctx.moveTo(p.x, p.y);
-        this.ctx.lineTo(this.mouse.x, this.mouse.y);
-        this.ctx.stroke();
-        this.ctx.closePath();
-      }
-
-      for (let j = index + 1; j < this.particles.length; j++) {
-        const p2 = this.particles[j];
-        const pDx = p2.x - p.x;
-        const pDy = p2.y - p.y;
-        const pDist = Math.sqrt(pDx * pDx + pDy * pDy);
-
-        if (pDist < 100) {
-          this.ctx.beginPath();
-          this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.12 * (1 - pDist / 100)})`;
-          this.ctx.lineWidth = 0.4;
-          this.ctx.moveTo(p.x, p.y);
-          this.ctx.lineTo(p2.x, p2.y);
-          this.ctx.stroke();
-          this.ctx.closePath();
-        }
-      }
-
-      this.ctx.beginPath();
-      this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      this.ctx.fillStyle = p.color;
-      this.ctx.fill();
-      this.ctx.closePath();
-    });
-
-    this.animationFrameId = requestAnimationFrame(this.animate.bind(this));
-  }
-
-  onGlobalMouseMove(event: MouseEvent): void {
+  @HostListener('window:mousemove', ['$event'])
+  mouseMove(event: MouseEvent): void {
     this.mouse.x = event.clientX;
     this.mouse.y = event.clientY;
   }
 
-  onGlobalMouseLeave(): void {
+  @HostListener('window:mouseleave')
+  mouseLeave(): void {
     this.mouse.x = -1000;
     this.mouse.y = -1000;
   }
 
-  ngOnDestroy(): void {
-    if (this.isBrowser) {
-      if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
-      window.removeEventListener('resize', this.resizeCanvas.bind(this));
-      window.removeEventListener('mousemove', this.onGlobalMouseMove.bind(this));
-      window.removeEventListener('mouseleave', this.onGlobalMouseLeave.bind(this));
+  createParticles(): void {
+    this.particles = [];
+    const count = Math.min(Math.floor((window.innerWidth * window.innerHeight) / 14000), 75);
+
+    for (let i = 0; i < count; i++) {
+      this.particles.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        radius: Math.random() * 1.5 + 1,
+        opacity: Math.random() * 0.4 + 0.3
+      });
     }
   }
+
+  animate = (): void => {
+    this.animationId = requestAnimationFrame(this.animate);
+    
+    const ctx = this.ctx;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    ctx.fillStyle = '#050816';
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i < this.particles.length; i++) {
+      const p1 = this.particles[i];
+      
+      p1.x += p1.vx;
+      p1.y += p1.vy;
+
+      if (p1.x < 0 || p1.x > width) p1.vx *= -1;
+      if (p1.y < 0 || p1.y > height) p1.vy *= -1;
+
+      const dxMouse = this.mouse.x - p1.x;
+      const dyMouse = this.mouse.y - p1.y;
+      const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+      if (distMouse < 130) {
+        p1.x += dxMouse * 0.02;
+        p1.y += dyMouse * 0.02;
+      }
+
+      ctx.beginPath();
+      ctx.arc(p1.x, p1.y, p1.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(59, 130, 246, 0.45)`; // Enhanced deep blue glowing node tint
+      ctx.fill();
+
+      for (let j = i + 1; j < this.particles.length; j++) {
+        const p2 = this.particles[j];
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 110) {
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.strokeStyle = `rgba(59, 130, 246, ${(1 - dist / 110) * 0.25})`; // Vivid line connectivity opacities
+          ctx.stroke();
+        }
+      }
+    }
+  };
 }

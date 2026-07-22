@@ -1,234 +1,386 @@
-/* تهيئة الفضاء اللوني وفك ارتباط خصائص الفليكس الموروثة بشكل خاطئ */
+/* ==========================================================================
+   FONT DEPLOYMENT (Issue #10)
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ==========================================================================
+   GLOBAL LAYOUT BASE
+   ========================================================================== */
 .admin-wrapper {
-  position: relative;
   min-height: 100vh;
-  background-color: #070b13 !important;
-  color: #e2e8f0 !important;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  overflow-x: hidden;
-  display: block !important;
-  text-align: left !important;
+  position: relative;
+  overflow: hidden;
+  /* Fixed Issue #1: Background is set to transparent so the canvas can be seen underneath */
+  background: transparent; 
+  color: #e2e8f0;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
-/* الكانفاس مدفوع للخلفية كلياً ولا يحجب الماوس والنقرات عن الأزرار */
+/* ==========================================================================
+   CANVAS DEPLOYMENT ENGINE (Issue #1)
+   ========================================================================== */
 .interactive-canvas {
-  position: fixed !important;
-  top: 0;
-  left: 0;
+  position: fixed;
+  inset: 0;
   width: 100vw;
   height: 100vh;
-  z-index: -1 !important; 
-  pointer-events: none !important;
+  z-index: -1; /* Fixed Issue #1: Canvas sits behind card elements */
+  pointer-events: none;
+  background-color: #050816; /* Clean theme fallback */
 }
 
+/* ==========================================================================
+   MAIN STRUCTURAL CONTAINER (Issue #9)
+   ========================================================================== */
 .container {
   position: relative;
-  z-index: 999 !important; /* رفع مستوى الطبقة لضمان تتبع الحدث الفوري */
-  max-width: 900px; 
-  margin: 0 auto !important;
-  padding: 32px 16px;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 24px;
+  z-index: 2;
+  width: 100%;
+  max-width: 760px; /* Fixed Issue #9: Aligned to target layout bounds */
+  margin: 0 auto;
+  padding: 35px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-/* الهيدر */
+/* ==========================================================================
+   HEADER ACTION SUB-SYSTEM
+   ========================================================================== */
 .page-header {
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  text-align: left !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-  .title {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 12px;
-    h1 { font-size: 20px; font-weight: 600; color: #ffffff; margin: 0; }
-    
-    .polygon-logo {
-      width: 14px;
-      height: 14px;
-      border: 2px solid #3b82f6;
-      transform: rotate(45deg);
-      border-radius: 2px;
-    }
-  }
-  .actions {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 16px;
-    .icon-btn { background: transparent; border: none; color: #94a3b8; font-size: 18px; cursor: pointer !important; &:hover { color: #ffffff; } }
+.title {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
   }
 }
 
-/* لوحة بطاقات التحليلات */
-.stats {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
-  gap: 20px;
-  @media (max-width: 768px) { grid-template-columns: 1fr !important; }
-
-  .stat-card {
-    background: rgba(15, 22, 38, 0.6) !important;
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 20px;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 16px;
-    text-align: left !important;
-    
-    h2 { font-size: 24px; font-weight: 700; color: #ffffff; margin: 0; }
-    p { font-size: 12px; color: #94a3b8; margin: 4px 0 0 0; }
-    .icon-badge { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-    .blue-badge { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
-    .green-badge { background: rgba(16, 185, 129, 0.1); color: #34d399; }
-    .cyan-badge { background: rgba(6, 182, 212, 0.1); color: #22d3ee; }
-  }
+.polygon-logo {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #3b82f6;
+  transform: rotate(45deg);
+  box-shadow: 0 0 20px #2563eb;
 }
 
-/* زر العميل بلونه التكتيكي الغامق المطابق للتصميم تماماً */
-.action-trigger-row { display: flex !important; justify-content: flex-start !important; }
-.add-btn {
-  background: #113cb0 !important; 
-  color: #ffffff;
-  border: none;
-  font-size: 13px;
-  padding: 10px 22px;
-  border-radius: 30px;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 8px;
-  cursor: pointer !important;
-  transition: background 0.2s;
-  &:hover { background: #1d4ed8 !important; }
-}
-
-/* صندوق الإدخال بعرضه المحكم ومنع التمدد الجانبي */
-.form-panel {
-  background: rgba(15, 22, 38, 0.6) !important;
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 24px;
-  max-width: 100% !important;
-  text-align: left !important;
-
-  h3 { font-size: 15px; color: #ffffff; margin: 0 0 20px 0; text-align: left !important; }
-  .form-row { 
-    display: grid !important; 
-    gap: 16px; 
-    margin-bottom: 16px; 
-    &.rows-2 { grid-template-columns: 1fr 1fr !important; } 
-    &.rows-3 { grid-template-columns: 1fr 1fr 1fr !important; } 
-    @media (max-width: 640px) { grid-template-columns: 1fr !important; }
-  }
-  
-  .input-group {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 8px;
-    text-align: left !important;
-    label { font-size: 10px; color: #94a3b8; text-transform: uppercase; text-align: left !important; }
-    input, select { 
-      background-color: #0e1524 !important; 
-      border: 1px solid #1e293b !important; 
-      color: #ffffff !important; 
-      padding: 12px; 
-      font-size: 13px; 
-      border-radius: 12px; 
-      outline: none;
-      text-align: left !important;
-    }
-    
-    /* جعل خيارات القائمة المنسدلة داكنة تناسب الثيم العام */
-    select option {
-      background-color: #0e1524 !important;
-      color: #ffffff !important;
-    }
-  }
-
-  .form-actions-buttons {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 12px;
-    margin-top: 24px;
-    button { padding: 10px 24px; font-size: 12px; border-radius: 10px; cursor: pointer !important; }
-    .submit-btn { background: #3b82f6; color: #ffffff; border: none; }
-    .cancel-btn { background: transparent; border: 1px solid #1e293b; color: #94a3b8; }
-  }
-}
-
-/* دليل عرض القوائم وتفتيح لون تاريخ الانتهاء المظلم سابقاً */
-.client-directory-list {
-  display: flex !important;
-  flex-direction: column !important;
+.actions {
+  display: flex;
   gap: 12px;
-  
-  .client-card-row {
-    background: rgba(15, 22, 38, 0.5) !important;
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: 16px;
-    padding: 16px 20px;
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: center !important;
+}
 
-    .client-left-profile {
-      display: flex !important;
-      flex-direction: row !important;
-      align-items: center !important;
-      gap: 16px;
-      text-align: left !important;
-      img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
-      
-      .client-meta-info {
-        text-align: left !important;
-        .title-status-line { 
-          display: flex !important; 
-          flex-direction: row !important; 
-          align-items: center !important; 
-          gap: 8px; 
-          h4 { margin: 0; color: #ffffff; font-size: 14px; }
-          .status-badge { font-size: 9px; padding: 2px 6px; border-radius: 6px; }
-          .badge-active { background: rgba(16, 185, 129, 0.1); color: #34d399; }
-          .badge-expired { background: rgba(239, 68, 68, 0.1); color: #f87171; }
-        }
-        .email-row-text { 
-          font-size: 12px; color: #64748b; margin: 4px 0 0 0; display: flex !important; flex-direction: row !important; align-items: center !important; gap: 6px;
-          span { color: #94a3b8; }
-        }
-        
-        /* جعل لون نص تاريخ الانتهاء ساطعاً وواضحاً كلياً */
-        .expiration-row-text.text-highlighted { 
-          font-size: 12px !important; 
-          color: #cbd5e1 !important; 
-          margin: 4px 0 0 0; 
-          display: flex !important; 
-          flex-direction: row !important; 
-          align-items: center !important; 
-          gap: 4px; 
-          font-weight: 500;
-        }
-      }
-    }
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: 0.25s ease;
 
-    .client-right-actions {
-      display: flex !important;
-      flex-direction: row !important;
-      gap: 8px;
-      .row-action-btn { 
-        width: 32px; height: 32px; background: rgba(30, 41, 59, 0.4); border: none; color: #64748b; border-radius: 8px; cursor: pointer !important; display: flex; align-items: center; justify-content: center;
-        &:hover { color: #ffffff; background: #1e293b; }
-        &.delete-btn-accent:hover { color: #f87171; background: rgba(239, 68, 68, 0.2); }
-      }
+  &:hover {
+    background: #2563eb;
+    color: white;
+  }
+}
+
+/* ==========================================================================
+   METRICS STAT CARDS (Issue #7)
+   ========================================================================== */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+
+  @media(max-width: 650px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-card {
+  padding: 16px 18px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(96, 165, 250, 0.12);
+  backdrop-filter: blur(20px);
+  /* Fixed Issue #7: Added target ambient glow shadow blueprint */
+  box-shadow: 0 0 30px rgba(0, 120, 255, 0.08), 0 10px 25px rgba(0, 0, 0, 0.3);
+  transition: 0.25s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: #3b82f6;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 24px;
+    color: white;
+  }
+
+  p {
+    margin: 3px 0 0;
+    color: #94a3b8;
+    font-size: 13px;
+  }
+}
+
+.icon-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.blue-badge  { background: rgba(29, 78, 216, 0.25); color: #60a5fa; }
+.green-badge { background: rgba(5, 150, 105, 0.25); color: #34d399; }
+.cyan-badge  { background: rgba(8, 145, 178, 0.25); color: #22d3ee; }
+
+/* ==========================================================================
+   PRIMARY ACTION TRIGGERS (Issue #8)
+   ========================================================================== */
+.action-trigger-row {
+  display: flex;
+}
+
+.add-btn {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  border-radius: 12px;
+  padding: 11px 22px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  /* Fixed Issue #8: Added glowing button drop shadow shadow */
+  box-shadow: 0 0 18px rgba(59, 130, 246, 0.35);
+  transition: 0.25s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 24px rgba(59, 130, 246, 0.55);
+  }
+}
+
+/* ==========================================================================
+   CREATION FORM PANEL (Issue #4)
+   ========================================================================== */
+.form-panel {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(96, 165, 250, 0.15);
+  border-radius: 20px;
+  padding: 32px; /* Fixed Issue #4: Increased padding for form layout spacing */
+  backdrop-filter: blur(20px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+
+  h3 {
+    color: white;
+    margin: 0 0 20px 0;
+    font-size: 17px;
+  }
+}
+
+.form-row {
+  display: grid;
+  gap: 15px;
+  margin-bottom: 24px; /* Fixed Issue #4: Added space beneath form input rows */
+
+  &.rows-2 { grid-template-columns: 1fr 1fr; }
+  &.rows-3 { grid-template-columns: repeat(3, 1fr); }
+
+  @media(max-width: 600px) {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  label {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  input, select {
+    background: #020617;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 11px 14px;
+    color: white;
+    outline: none;
+    font-size: 13px;
+
+    &:focus {
+      border-color: #3b82f6;
     }
+  }
+}
+
+.form-actions-buttons {
+  display: flex;
+  gap: 12px;
+
+  button {
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .submit-btn {
+    background: #2563eb;
+    border: none;
+    color: white;
+    &:hover { background: #1d4ed8; }
+  }
+
+  .cancel-btn {
+    background: transparent;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    &:hover { color: white; background: rgba(255, 255, 255, 0.02); }
+  }
+}
+
+/* ==========================================================================
+   CLIENT RENDERING STACKS (Issue #6)
+   ========================================================================== */
+.client-directory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.client-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(96, 165, 250, 0.12);
+  border-radius: 18px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  transition: 0.25s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: #3b82f6;
+  }
+}
+
+.client-left-profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid #2563eb;
+    background-color: #1e293b;
+  }
+}
+
+.client-meta-info {
+  h4 {
+    margin: 0;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .client-role {
+    font-size: 12px;
+    color: #3b82f6; /* Accent color matching target */
+    font-weight: 500;
+    margin: 3px 0;
+  }
+}
+
+.title-status-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-badge {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+
+  &.badge-expired {
+    background: rgba(220, 38, 38, 0.15);
+    color: #f87171;
+  }
+}
+
+.email-row-text, .expiration-row-text {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 3px 0;
+}
+
+.copy-action-btn {
+  cursor: pointer;
+  margin-left: 6px;
+  transition: color 0.2s;
+  &:hover { color: white; }
+}
+
+.client-right-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.row-action-btn {
+  width: 38px; /* Fixed Issue #6: Increased action button sizes */
+  height: 38px; /* Fixed Issue #6 */
+  border-radius: 10px; /* Fixed Issue #6 */
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: 0.25s ease;
+
+  &:hover {
+    background: #2563eb;
+    color: white;
+  }
+
+  &.delete-btn-accent:hover {
+    background: #dc2626;
   }
 }
