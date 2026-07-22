@@ -93,14 +93,19 @@
   box-sizing: border-box;
 }
 
-/* Horizontal Tabs Bar */
 .tabs-nav-bar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.65rem;
   margin-bottom: 1.8rem;
-  overflow-x: auto;
   padding-bottom: 0.4rem;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 
   .nav-tab-pill {
     display: inline-flex;
