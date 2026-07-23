@@ -1,122 +1,364 @@
-<div class="admin-wrapper" dir="ltr">
+<div class="admin-wrapper" [attr.dir]="dir">
+  <!-- Interactive Constellation Canvas Background -->
   <canvas #particleCanvas class="interactive-canvas"></canvas>
 
   <div class="container">
     
+    <!-- Header -->
     <header class="page-header">
       <div class="title">
         <div class="polygon-logo"></div>
-        <h1>Admin Panel</h1>
+        <h1>{{ t.brand }}</h1>
       </div>
       <div class="actions">
-        <button class="icon-btn" type="button"><i class="fa-solid fa-language"></i></button>
-        <button class="icon-btn" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+        <!-- Translate Icon button -->
+        <button class="icon-btn" (click)="toggleLanguage()" [title]="currentLang === 'en' ? 'تغيير إلى العربية' : 'Switch to English'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m5 8 6 6"/>
+            <path d="m4 14 6-6 2-3"/>
+            <path d="M2 5h12"/>
+            <path d="M7 2h1"/>
+            <path d="m22 22-5-10-5 10"/>
+            <path d="M14 18h6"/>
+          </svg>
+        </button>
+        <!-- Logout button -->
+        <button class="icon-btn" (click)="logout()" [title]="t.logout">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
       </div>
     </header>
 
-    <!-- 2. ربط العدادات بالـ Getters الحية والديناميكية تلقائياً -->
+    <!-- Stats -->
     <section class="stats">
       <div class="stat-card">
         <div class="icon-badge blue-badge"><i class="fa-solid fa-users"></i></div>
         <div>
           <h2>{{ totalClients }}</h2>
-          <p>Total Clients</p>
+          <p>{{ t.totalClients }}</p>
         </div>
       </div>
       <div class="stat-card">
         <div class="icon-badge green-badge"><i class="fa-solid fa-check"></i></div>
         <div>
           <h2>{{ activeClients }}</h2>
-          <p>Active</p>
+          <p>{{ t.active }}</p>
         </div>
       </div>
       <div class="stat-card">
         <div class="icon-badge cyan-badge"><i class="fa-regular fa-clock"></i></div>
         <div>
           <h2>{{ expiredClients }}</h2>
-          <p>Expired</p>
+          <p>{{ t.expired }}</p>
         </div>
       </div>
     </section>
 
+    <!-- Action row -->
     <div class="action-trigger-row">
       <button class="add-btn" type="button" (click)="toggleForm($event)">
-        <i class="fa-solid fa-user-plus"></i> Add New Client
+        <i class="fa-solid fa-user-plus"></i> {{ t.addClient }}
       </button>
     </div>
 
+    <!-- Create Form Panel -->
     <section class="form-panel" *ngIf="isFormOpen">
-      <h3>Create New Client</h3>
+      <h3>{{ t.createClient }}</h3>
       <form (ngSubmit)="onSubmitClient($event)">
-        <div class="form-row rows-2">
+        <div class="form-row rows-3">
           <div class="input-group">
-            <label>Client Name</label>
+            <label>{{ t.clientName }}</label>
             <input type="text" name="name" [(ngModel)]="newClient.name" placeholder="Ahmed Ali" required />
           </div>
           <div class="input-group">
-            <label>Email</label>
+            <label>{{ t.email }}</label>
             <input type="email" name="email" [(ngModel)]="newClient.email" placeholder="client@example.com" required />
           </div>
-        </div>
-
-        <div class="form-row rows-3">
           <div class="input-group">
-            <label>Password</label>
-            <input type="password" name="password" [(ngModel)]="newClient.password" placeholder="••••••••" required />
-          </div>
-          <div class="input-group">
-            <label>Duration</label>
-            <input type="number" name="duration" [(ngModel)]="newClient.duration" />
-          </div>
-          <div class="input-group">
-            <label>Unit</label>
-            <select name="unit" [(ngModel)]="newClient.unit">
-              <option value="Hours">Hours</option>
-              <option value="Days">Days</option>
-              <option value="Months">Months</option>
-              <option value="Years">Years</option>
+            <label>{{ t.role }}</label>
+            <select name="role" [(ngModel)]="newClient.role">
+              <option value="Client">{{ t.client }}</option>
+              <option value="SuperAdmin">{{ t.superAdmin }}</option>
             </select>
           </div>
         </div>
 
+        <div class="form-row rows-3" *ngIf="newClient.role === 'Client'">
+          <div class="input-group">
+            <label>{{ t.password }}</label>
+            <input type="password" name="password" [(ngModel)]="newClient.password" placeholder="••••••••" required />
+          </div>
+          <div class="input-group">
+            <label>{{ t.duration }}</label>
+            <input type="number" name="duration" [(ngModel)]="newClient.duration" />
+          </div>
+          <div class="input-group">
+            <label>{{ t.unit }}</label>
+            <select name="unit" [(ngModel)]="newClient.unit">
+              <option value="Minutes">{{ currentLang === 'ar' ? 'دقائق' : 'Minutes' }}</option>
+              <option value="Hours">{{ t.hours }}</option>
+              <option value="Days">{{ t.days }}</option>
+              <option value="Months">{{ t.months }}</option>
+              <option value="Years">{{ t.years }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row rows-1" *ngIf="newClient.role === 'SuperAdmin'">
+          <div class="input-group">
+            <label>{{ t.password }}</label>
+            <input type="password" name="password" [(ngModel)]="newClient.password" placeholder="••••••••" required />
+          </div>
+        </div>
+
         <div class="form-actions-buttons">
-          <button type="submit" class="submit-btn">Create</button>
-          <button type="button" class="cancel-btn" (click)="toggleForm($event)">Cancel</button>
+          <button type="submit" class="submit-btn">{{ t.create }}</button>
+          <button type="button" class="cancel-btn" (click)="toggleForm($event)">{{ t.cancel }}</button>
         </div>
       </form>
     </section>
 
+    <!-- Users directory list -->
     <section class="client-directory-list">
       <div class="client-card-row" *ngFor="let client of clients; let i = index">
         <div class="client-left-profile">
-          <!-- 1. عرض الرابط الفعلي المصلح للصور -->
-          <img [src]="client.avatar" alt="User Profile Thumbnail" />
+          <img [src]="client.avatar" alt="Avatar Placeholder" />
           <div class="client-meta-info">
             <div class="title-status-line">
               <h4>{{ client.clientName }}</h4>
               <span class="status-badge" [ngClass]="client.status === 'Active' ? 'badge-active' : 'badge-expired'">
                 {{ client.status }}
               </span>
+              <span class="role-badge" [ngClass]="client.role === 'SuperAdmin' ? 'superadmin-badge' : 'client-badge'">
+                {{ client.role === 'SuperAdmin' ? t.superAdmin : t.client }}
+              </span>
             </div>
-            <!-- 6. إضافة وظيفة حدث الضغط لنسخ البريد بنجاح للحافظة -->
             <p class="email-row-text">
-              Email: <span>{{ client.email }}</span> 
+              {{ t.email }}: <span>{{ client.email }}</span> 
               <i class="fa-regular fa-copy copy-action-btn" (click)="copyEmail(client.email, $event)"></i>
             </p>
-            <!-- 5. عرض تاريخ انتهاء الاشتراك القادم من السيرفر أو القيمة الافتراضية -->
             <p class="expiration-row-text text-highlighted">
-              <i class="fa-regular fa-clock"></i> Expires: {{ client.expires }}
+              <i class="fa-regular fa-clock"></i> {{ t.expires }}: {{ client.expires }}
             </p>
           </div>
         </div>
-        <!-- 4. ربط الأزرار الفردية للتحكم بالملفات والتعديل -->
         <div class="client-right-actions">
-          <button class="row-action-btn" type="button" (click)="viewClient(client)"><i class="fa-regular fa-eye"></i></button>
-          <button class="row-action-btn" type="button" (click)="editClient(client)"><i class="fa-regular fa-edit"></i></button>
-          <button class="row-action-btn delete-btn-accent" type="button" (click)="deleteClient(i, $event)"><i class="fa-regular fa-trash-can"></i></button>
+          <button class="row-action-btn" type="button" (click)="viewClient(client)" title="Preview card"><i class="fa-regular fa-eye"></i></button>
+          <button class="row-action-btn" type="button" (click)="editClient(client)" title="Edit configurations"><i class="fa-regular fa-edit"></i></button>
+          <button class="row-action-btn delete-btn-accent" type="button" (click)="deleteClient(client, $event)" title="Delete user"><i class="fa-regular fa-trash-can"></i></button>
         </div>
       </div>
     </section>
 
+  </div>
+
+  <!-- EDIT ACCOUNT MODAL -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="showEditModal = false">
+    <div class="modal-card-wrapper edit-client-modal-card" (click)="$event.stopPropagation()">
+      <div class="edit-modal-header">
+        <h3>{{ t.editTitle }}</h3>
+        <button class="close-icon-btn" (click)="showEditModal = false"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form (ngSubmit)="onSubmitEdit($event)" class="edit-modal-body">
+        <div class="form-row rows-2">
+          <div class="input-group">
+            <label>{{ t.clientName }}</label>
+            <input type="text" name="editName" [(ngModel)]="editForm.name" required />
+          </div>
+          <div class="input-group">
+            <label>{{ t.email }}</label>
+            <input type="email" name="editEmail" [(ngModel)]="editForm.email" required />
+          </div>
+        </div>
+
+        <div class="form-row rows-1">
+          <div class="input-group">
+            <label>{{ t.password }} ({{ currentLang === 'ar' ? 'اتركه فارغاً لعدم التغيير' : 'leave empty to keep same' }})</label>
+            <input type="password" name="editPassword" [(ngModel)]="editForm.password" placeholder="••••••••" />
+          </div>
+        </div>
+
+        <div class="form-row rows-2" *ngIf="editForm.role === 'Client'">
+          <div class="input-group">
+            <label>{{ t.duration }}</label>
+            <input type="number" name="editDuration" [(ngModel)]="editForm.duration" />
+          </div>
+          <div class="input-group">
+            <label>{{ t.unit }}</label>
+            <select name="editUnit" [(ngModel)]="editForm.unit">
+              <option value="Minutes">{{ currentLang === 'ar' ? 'دقائق' : 'Minutes' }}</option>
+              <option value="Hours">{{ t.hours }}</option>
+              <option value="Days">{{ t.days }}</option>
+              <option value="Months">{{ t.months }}</option>
+              <option value="Years">{{ t.years }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="edit-modal-footer">
+          <button type="button" class="btn-cancel" (click)="showEditModal = false">{{ t.cancel }}</button>
+          <button type="submit" class="btn-save">{{ t.saveChanges }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PREVIEW DIGITAL CARD MODAL -->
+  <div class="modal-overlay" *ngIf="showPreviewModal" (click)="showPreviewModal = false">
+    <div class="modal-card-wrapper digital-card-preview-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close-btn" (click)="showPreviewModal = false"><i class="fa-solid fa-xmark"></i></button>
+      
+      <div class="phone-card-container" *ngIf="previewUser">
+        <!-- Common Toolbar for both sides -->
+        <div class="card-header-toolbar">
+          <button class="tb-btn" type="button"><i class="fa-solid fa-gear"></i></button>
+          <button class="tb-btn lang-pill" type="button" (click)="toggleLanguage()">
+            <i class="fa-solid fa-language"></i> {{ currentLang === 'en' ? 'عربي' : 'English' }}
+          </button>
+          <button class="tb-btn" type="button" (click)="toggleCardSide()"><i class="fa-solid fa-arrows-rotate"></i></button>
+        </div>
+
+        <!-- SIDE A: Front Contact Info -->
+        <div class="card-side-wrapper fade-in-animation" *ngIf="!showCardBackSide">
+          <!-- Banner Photo -->
+          <div class="card-banner" [style.background-image]="previewUser.backgroundPhoto ? 'url(' + previewUser.backgroundPhoto + ')' : null"></div>
+          
+          <!-- Large center avatar and title -->
+          <div class="card-avatar-center-wrap">
+            <div class="avatar-ring-large">
+              <img [src]="previewUser.profilePhoto || 'https://ui-avatars.com/api/?name=' + (previewUser.nameEn || previewUser.username || 'User') + '&background=1d8cf8&color=fff'" alt="Avatar" class="avatar-img" />
+            </div>
+            <h2 class="card-name-large">{{ currentLang === 'ar' ? (previewUser.nameAr || previewUser.nameEn || previewUser.username) : (previewUser.nameEn || previewUser.username) }}</h2>
+            <div class="card-title-pill" *ngIf="previewUser.titleEn || previewUser.titleAr">
+              <i class="fa-solid fa-briefcase"></i> {{ currentLang === 'ar' ? (previewUser.titleAr || previewUser.titleEn) : (previewUser.titleEn || previewUser.titleAr) }}
+            </div>
+            <p class="card-company-subtext" *ngIf="previewUser.companyEn || previewUser.companyAr">
+              {{ currentLang === 'ar' ? (previewUser.companyAr || previewUser.companyEn) : (previewUser.companyEn || previewUser.companyAr) }}
+            </p>
+          </div>
+
+          <!-- Quick Action Links -->
+          <div class="quick-action-row">
+            <a *ngIf="previewUser.website" [href]="previewUser.website" target="_blank" class="qa-item"><i class="fa-solid fa-globe"></i><span>Web</span></a>
+            <a *ngIf="previewUser.linkedIn" [href]="previewUser.linkedIn" target="_blank" class="qa-item"><i class="fa-brands fa-linkedin"></i><span>LinkedIn</span></a>
+            <a *ngIf="previewUser.whatsApp" [href]="previewUser.whatsApp" target="_blank" class="qa-item"><i class="fa-brands fa-whatsapp"></i><span>Chat</span></a>
+            <a *ngIf="previewUser.email" [href]="'mailto:' + previewUser.email" class="qa-item"><i class="fa-solid fa-envelope"></i><span>Email</span></a>
+            <a *ngIf="previewUser.phone" [href]="'tel:' + previewUser.phone" class="qa-item"><i class="fa-solid fa-phone"></i><span>Call</span></a>
+          </div>
+
+          <!-- Pagination dot indicator -->
+          <div class="page-dot-indicator">
+            <span class="active-dot"></span>
+          </div>
+
+          <!-- Details list -->
+          <div class="card-details-section">
+            <div class="detail-item" *ngIf="previewUser.phone">
+              <div class="detail-icon"><i class="fa-solid fa-phone"></i></div>
+              <div class="detail-text">
+                <label>Call</label>
+                <span>{{ previewUser.phone }}</span>
+              </div>
+            </div>
+            <div class="detail-item" *ngIf="previewUser.email">
+              <div class="detail-icon"><i class="fa-solid fa-envelope"></i></div>
+              <div class="detail-text">
+                <label>Email</label>
+                <span>{{ previewUser.email }}</span>
+              </div>
+            </div>
+            <div class="detail-item" *ngIf="previewUser.locationEn || previewUser.locationAr">
+              <div class="detail-icon"><i class="fa-solid fa-location-dot"></i></div>
+              <div class="detail-text">
+                <label>Location</label>
+                <span>{{ currentLang === 'ar' ? (previewUser.locationAr || previewUser.locationEn) : (previewUser.locationEn || previewUser.locationAr) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- QR Code Section -->
+          <div class="qr-code-section">
+            <p class="qr-label">{{ t.scanText }}</p>
+            <div class="qr-box">
+              <img [src]="getQrCodeUrl(previewUser)" alt="QR Code" />
+            </div>
+          </div>
+
+          <!-- Action Footer Buttons -->
+          <div class="card-action-footer">
+            <button class="btn-save-contact" (click)="downloadVCard(previewUser)">
+              <i class="fa-solid fa-user-plus"></i> {{ t.saveContact }}
+            </button>
+            <button class="btn-circle-action" (click)="downloadVCard(previewUser)"><i class="fa-solid fa-download"></i></button>
+            <button class="btn-circle-action" (click)="shareCard(previewUser)"><i class="fa-solid fa-share-nodes"></i></button>
+          </div>
+        </div>
+
+        <!-- SIDE B: Back Profile Details -->
+        <div class="card-side-wrapper fade-in-animation back-side-wrapper" *ngIf="showCardBackSide">
+          <!-- Small profile badge at the top -->
+          <div class="small-profile-card">
+            <div class="small-avatar-circle">
+              <img [src]="previewUser.profilePhoto || 'https://ui-avatars.com/api/?name=' + (previewUser.nameEn || previewUser.username || 'User') + '&background=1d8cf8&color=fff'" alt="Avatar" />
+            </div>
+            <div class="small-profile-info">
+              <h4>{{ currentLang === 'ar' ? (previewUser.nameAr || previewUser.nameEn || previewUser.username) : (previewUser.nameEn || previewUser.username) }}</h4>
+              <p>{{ currentLang === 'ar' ? (previewUser.titleAr || previewUser.titleEn) : (previewUser.titleEn || previewUser.titleAr) }}</p>
+            </div>
+          </div>
+
+          <!-- About Me section -->
+          <div class="section-card-block" *ngIf="previewUser.aboutEn || previewUser.aboutAr">
+            <div class="block-title">
+              <div class="block-icon blue"><i class="fa-regular fa-heart"></i></div>
+              <span>{{ t.aboutMe }}</span>
+            </div>
+            <div class="block-content">
+              <p>{{ currentLang === 'ar' ? (previewUser.aboutAr || previewUser.aboutEn) : (previewUser.aboutEn || previewUser.aboutAr) }}</p>
+            </div>
+          </div>
+
+          <!-- Skills section -->
+          <div class="section-card-block" *ngIf="previewUser.skills && previewUser.skills.length > 0">
+            <div class="block-title">
+              <div class="block-icon blue"><i class="fa-solid fa-ribbon"></i></div>
+              <span>{{ t.skills }}</span>
+            </div>
+            <div class="block-content flex-wrap-row">
+              <span class="skill-tag-badge" *ngFor="let s of previewUser.skills">{{ s }}</span>
+            </div>
+          </div>
+
+          <!-- Experience section -->
+          <div class="section-card-block" *ngIf="previewUser.experiences && previewUser.experiences.length > 0">
+            <div class="block-title">
+              <div class="block-icon blue"><i class="fa-solid fa-briefcase"></i></div>
+              <span>{{ t.experience }}</span>
+            </div>
+            <div class="block-content items-vertical-list">
+              <div class="list-item-block" *ngFor="let exp of previewUser.experiences">
+                <h5>{{ currentLang === 'ar' ? (exp.titleAr || exp.titleEn) : (exp.titleEn || exp.titleAr) }}</h5>
+                <p>{{ currentLang === 'ar' ? (exp.companyAr || exp.companyEn) : (exp.companyEn || exp.companyAr) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Education section -->
+          <div class="section-card-block" *ngIf="previewUser.educations && previewUser.educations.length > 0">
+            <div class="block-title">
+              <div class="block-icon blue"><i class="fa-solid fa-graduation-cap"></i></div>
+              <span>{{ t.education }}</span>
+            </div>
+            <div class="block-content items-vertical-list">
+              <div class="list-item-block" *ngFor="let edu of previewUser.educations">
+                <h5>{{ currentLang === 'ar' ? (edu.degreeAr || edu.degreeEn) : (edu.degreeEn || edu.degreeAr) }}</h5>
+                <p>{{ currentLang === 'ar' ? (edu.fieldAr || edu.fieldEn) : (edu.fieldEn || edu.fieldAr) }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
