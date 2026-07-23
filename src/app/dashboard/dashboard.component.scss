@@ -522,3 +522,198 @@
     }
   }
 }
+
+/* Edit Image Modal Custom Styles */
+.edit-image-modal-card {
+  background: linear-gradient(145deg, #111827, #0f172a);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+
+  .edit-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 0.8rem;
+
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0;
+    }
+
+    .close-icon-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.15rem;
+      cursor: pointer;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #ffffff;
+      }
+    }
+  }
+
+  .edit-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+
+    .crop-container {
+      position: relative;
+      width: 100%;
+      height: 320px;
+      background: #000;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      cursor: grab;
+      user-select: none;
+
+      &:active {
+        cursor: grabbing;
+      }
+
+      .cropper-preview-img {
+        max-width: 100%;
+        max-height: 100%;
+        transform-origin: center;
+        pointer-events: none;
+      }
+
+      .circle-overlay-mask {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &::after {
+          content: '';
+          width: 240px;
+          height: 240px;
+          border: 2px solid rgba(255, 255, 255, 0.7);
+          border-radius: 50%;
+          position: absolute;
+          box-shadow: 0 0 0 9999px rgba(11, 15, 25, 0.75);
+        }
+      }
+
+      .rect-overlay-mask {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &::after {
+          content: '';
+          width: 280px;
+          height: 160px;
+          border: 2px solid rgba(255, 255, 255, 0.7);
+          border-radius: 8px;
+          position: absolute;
+          box-shadow: 0 0 0 9999px rgba(11, 15, 25, 0.75);
+        }
+      }
+    }
+
+    .zoom-slider-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+      }
+
+      .zoom-slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: #1e293b;
+        outline: none;
+        transition: background 0.2s;
+
+        &::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #1d8cf8;
+          cursor: pointer;
+          box-shadow: 0 0 8px rgba(29, 140, 248, 0.5);
+          transition: transform 0.1s ease;
+
+          &:hover {
+            transform: scale(1.15);
+          }
+        }
+      }
+    }
+  }
+
+  .edit-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 1rem;
+
+    .btn-cancel {
+      padding: 0.6rem 1.25rem;
+      border-radius: 10px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #ffffff;
+        border-color: rgba(255, 255, 255, 0.25);
+      }
+    }
+
+    .btn-save-image {
+      padding: 0.6rem 1.4rem;
+      border-radius: 10px;
+      background: #1d8cf8;
+      border: none;
+      color: #ffffff;
+      font-size: 0.875rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(29, 140, 248, 0.35);
+      transition: all 0.2s ease;
+
+      &:hover {
+        box-shadow: 0 6px 20px rgba(29, 140, 248, 0.55);
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+

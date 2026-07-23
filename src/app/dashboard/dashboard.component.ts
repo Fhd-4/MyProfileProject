@@ -62,6 +62,15 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   successMessage: string | null = null;
   showPreviewModal: boolean = false;
 
+  // Edit Image Modal variables
+  showEditImageModal: boolean = false;
+  originalImageSrc: string = '';
+  zoomValue: number = 1;
+  dragOffset = { x: 0, y: 0 };
+  private isDraggingImage: boolean = false;
+  private startDragPos = { x: 0, y: 0 };
+  currentUploadType: 'avatar' | 'background' = 'avatar';
+
   private readonly getApiUrl = `${environment.apiUrl}/Profile/user/`;
   private readonly updateApiUrl = `${environment.apiUrl}/Profile/UpdateMyProfile`;
 
@@ -272,37 +281,140 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   onFileSelected(event: any, type: 'avatar' | 'background') {
     const file: File = event.target.files[0];
     if (file) {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      this.isSaving = true;
-      this.errorMessage = null;
-      this.successMessage = null;
-
-      const uploadUrl = `${environment.apiUrl}/ImageUploader`;
-
-      this.http.post<any>(uploadUrl, formData).subscribe({
-        next: (res) => {
-          this.isSaving = false;
-          if (res && res.url) {
-            if (type === 'avatar') {
-              this.userData.profilePhoto = res.url;
-            } else {
-              this.userData.backgroundPhoto = res.url;
-            }
-            this.successMessage = this.currentLang === 'ar' ? 'تم رفع الصورة بنجاح!' : 'Image uploaded successfully!';
-            this.saveProfile();
-          }
-        },
-        error: (err) => {
-          this.isSaving = false;
-          console.error('File upload error:', err);
-          this.errorMessage = this.currentLang === 'ar' 
-            ? 'فشل رفع الصورة! يرجى التحقق من صيغة الملف.' 
-            : 'Image upload failed! Please check file format.';
-        }
-      });
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.originalImageSrc = e.target.result;
+        this.zoomValue = 1;
+        this.dragOffset = { x: 0, y: 0 };
+        this.currentUploadType = type;
+        this.showEditImageModal = true;
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
     }
+  }
+
+  closeEditModal() {
+    this.showEditImageModal = false;
+    this.originalImageSrc = '';
+  }
+
+  startDrag(event: MouseEvent | TouchEvent) {
+    this.isDraggingImage = true;
+    const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+    const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+    this.startDragPos = {
+      x: clientX - this.dragOffset.x,
+      y: clientY - this.dragOffset.y
+    };
+  }
+
+  dragImage(event: MouseEvent | TouchEvent) {
+    if (!this.isDraggingImage) return;
+    const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+    const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+    this.dragOffset = {
+      x: clientX - this.startDragPos.x,
+      y: clientY - this.startDragPos.y
+    };
+  }
+
+  endDrag() {
+    this.isDraggingImage = false;
+  }
+
+  applyCropAndUpload() {
+    const type = this.currentUploadType;
+    const img = new Image();
+    img.src = this.originalImageSrc;
+    img.onload = () => {
+      const isAvatar = type === 'avatar';
+      const canvasWidth = isAvatar ? 400 : 600;
+      const canvasHeight = isAvatar ? 400 : 340;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        const imgRatio = img.width / img.height;
+        let drawWidth = 320;
+        let drawHeight = 320;
+
+        if (imgRatio > 1) {
+          drawWidth = 320 * imgRatio;
+        } else {
+          drawHeight = 320 / imgRatio;
+        }
+
+        ctx.save();
+        ctx.translate(canvasWidth / 2, canvasHeight / 2);
+        
+        // Dynamic scale depending on type
+        const cropMultiplier = isAvatar ? (400 / 240) : (600 / 280);
+        const scale = this.zoomValue * cropMultiplier;
+        ctx.scale(scale, scale);
+        
+        // Translate drag offset
+        ctx.translate(this.dragOffset.x * (240 / 320), this.dragOffset.y * (240 / 320));
+
+        ctx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+        ctx.restore();
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            // Local preview instantly
+            const localUrl = URL.createObjectURL(blob);
+            if (type === 'avatar') {
+              this.userData.profilePhoto = localUrl;
+            } else {
+              this.userData.backgroundPhoto = localUrl;
+            }
+
+            // Close modal immediately
+            this.showEditImageModal = false;
+
+            // Upload in background
+            this.uploadCroppedFile(blob, type);
+          }
+        }, 'image/jpeg', 0.95);
+      }
+    };
+  }
+
+  uploadCroppedFile(blob: Blob, type: 'avatar' | 'background') {
+    const formData = new FormData();
+    formData.append('file', blob, 'cropped_image.jpg');
+
+    this.isSaving = true;
+    this.errorMessage = null;
+    this.successMessage = null;
+
+    const uploadUrl = `${environment.apiUrl}/ImageUploader`;
+
+    this.http.post<any>(uploadUrl, formData).subscribe({
+      next: (res) => {
+        this.isSaving = false;
+        if (res && res.url) {
+          if (type === 'avatar') {
+            this.userData.profilePhoto = res.url;
+          } else {
+            this.userData.backgroundPhoto = res.url;
+          }
+          this.successMessage = this.currentLang === 'ar' ? 'تم رفع وحفظ الصورة بنجاح!' : 'Image uploaded and saved!';
+          this.saveProfile();
+        }
+      },
+      error: (err) => {
+        this.isSaving = false;
+        console.error('File upload error:', err);
+        this.errorMessage = this.currentLang === 'ar' 
+          ? 'فشل رفع الصورة على السيرفر! يرجى التحقق من اتصال السيرفر.' 
+          : 'Image upload to server failed! Please check connection.';
+      }
+    });
   }
 
   addSkill() {

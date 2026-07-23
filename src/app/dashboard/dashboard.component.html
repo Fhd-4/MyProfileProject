@@ -347,6 +347,44 @@
     </div>
   </main>
 
+  <!-- EDIT IMAGE MODAL (Zoom & Drag Cropper) -->
+  <div class="modal-overlay" *ngIf="showEditImageModal" (click)="closeEditModal()">
+    <div class="modal-card-wrapper edit-image-modal-card" (click)="$event.stopPropagation()">
+      <div class="edit-modal-header">
+        <h3>Edit Image</h3>
+        <button class="close-icon-btn" (click)="closeEditModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="edit-modal-body">
+        <div class="crop-container"
+             (mousedown)="startDrag($event)"
+             (mousemove)="dragImage($event)"
+             (mouseup)="endDrag()"
+             (mouseleave)="endDrag()"
+             (touchstart)="startDrag($event)"
+             (touchmove)="dragImage($event)"
+             (touchend)="endDrag()">
+          <img [src]="originalImageSrc"
+               [style.transform]="'scale(' + zoomValue + ') translate(' + dragOffset.x + 'px, ' + dragOffset.y + 'px)'"
+               class="cropper-preview-img"
+               alt="Preview" />
+          <div [class.circle-overlay-mask]="currentUploadType === 'avatar'"
+               [class.rect-overlay-mask]="currentUploadType === 'background'"></div>
+        </div>
+
+        <div class="zoom-slider-container">
+          <label>Zoom</label>
+          <input type="range" class="zoom-slider" min="1" max="4" step="0.05" [(ngModel)]="zoomValue" />
+        </div>
+      </div>
+
+      <div class="edit-modal-footer">
+        <button class="btn-cancel" (click)="closeEditModal()">Cancel</button>
+        <button class="btn-save-image" (click)="applyCropAndUpload()">Save Image</button>
+      </div>
+    </div>
+  </div>
+
   <!-- DIGITAL CARD PREVIEW MODAL -->
   <div class="modal-overlay" *ngIf="showPreviewModal" (click)="togglePreviewModal()">
     <div class="modal-card-wrapper" (click)="$event.stopPropagation()">
