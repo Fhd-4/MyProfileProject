@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, OnDestroy, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -155,6 +155,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private router: Router,
     private http: HttpClient,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -288,6 +289,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         this.dragOffset = { x: 0, y: 0 };
         this.currentUploadType = type;
         this.showEditImageModal = true;
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
       event.target.value = '';
@@ -375,6 +377,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
 
             // Close modal immediately
             this.showEditImageModal = false;
+            this.cdr.detectChanges();
 
             // Upload in background
             this.uploadCroppedFile(blob, type);
