@@ -349,6 +349,12 @@
   color: #4ade80;
 }
 
+.alert-danger {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
 /* Skills Manage Chips */
 .add-row {
   display: flex;

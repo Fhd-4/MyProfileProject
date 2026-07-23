@@ -72,6 +72,11 @@
       <span>{{ successMessage }}</span>
     </div>
 
+    <div class="notification-alert alert-danger" *ngIf="errorMessage">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+
     <!-- TAB 1: BASIC INFO -->
     <div class="tab-pane-wrapper" *ngIf="activeTab === 'basic'">
       <!-- PROFILE PHOTO & BACKGROUND CARD -->

@@ -63,7 +63,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   showPreviewModal: boolean = false;
 
   private readonly getApiUrl = `${environment.apiUrl}/Profile/user/`;
-  private readonly updateApiUrl = `${environment.apiUrl}/Profile/me`;
+  private readonly updateApiUrl = `${environment.apiUrl}/Profile/UpdateMyProfile`;
 
   private ctx: CanvasRenderingContext2D | null = null;
   private animId: number = 0;
@@ -370,8 +370,9 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
       error: (err) => {
         this.isSaving = false;
         console.error('Save error:', err);
-        localStorage.setItem('user', JSON.stringify(this.userData));
-        this.successMessage = this.t.saveSuccessMsg;
+        this.errorMessage = this.currentLang === 'ar' 
+          ? 'فشل حفظ وتحديث التغييرات! يرجى التأكد من اتصال السيرفر.' 
+          : 'Failed to save changes! Please check server connection.';
       }
     });
   }
