@@ -7,8 +7,8 @@
     <!-- Header -->
     <header class="page-header">
       <div class="title">
-        <div class="polygon-logo"></div>
-        <h1>{{ t.brand }}</h1>
+        <i class="fa-solid fa-shield-halved admin-header-shield"></i>
+        <h1>Admin Panel</h1>
       </div>
       <div class="actions">
         <!-- Translate Icon button -->
@@ -212,11 +212,15 @@
       <div class="phone-card-container" *ngIf="previewUser">
         <!-- Common Toolbar for both sides -->
         <div class="card-header-toolbar">
-          <button class="tb-btn" type="button"><i class="fa-solid fa-gear"></i></button>
-          <button class="tb-btn lang-pill" type="button" (click)="toggleLanguage()">
-            <i class="fa-solid fa-language"></i> {{ currentLang === 'en' ? 'عربي' : 'English' }}
-          </button>
-          <button class="tb-btn" type="button" (click)="toggleCardSide()"><i class="fa-solid fa-arrows-rotate"></i></button>
+          <div class="toolbar-left">
+            <button class="tb-btn" type="button"><i class="fa-solid fa-gear"></i></button>
+          </div>
+          <div class="toolbar-right">
+            <button class="tb-btn lang-pill" type="button" (click)="toggleLanguage()">
+              <i class="fa-solid fa-language"></i> <span>{{ currentLang === 'en' ? 'عربي' : 'English' }}</span>
+            </button>
+            <button class="tb-btn" type="button" (click)="toggleCardSide()"><i class="fa-solid fa-rotate-right"></i></button>
+          </div>
         </div>
 
         <!-- SIDE A: Front Contact Info -->

@@ -197,9 +197,15 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
 
           let formattedExpiry = this.currentLang === 'ar' ? 'وصول مفتوح' : 'Unlimited Access';
           if (user.subscriptionEndDate) {
-            formattedExpiry = new Date(user.subscriptionEndDate).toLocaleDateString(
-              this.currentLang === 'ar' ? 'ar-EG' : 'en-US'
-            );
+            const date = new Date(user.subscriptionEndDate);
+            formattedExpiry = date.toLocaleString(this.currentLang === 'ar' ? 'ar-EG' : 'en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true
+            });
           }
 
           return {
