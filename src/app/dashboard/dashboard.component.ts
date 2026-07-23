@@ -269,15 +269,39 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  triggerPhotoUpload(type: 'avatar' | 'background') {
-    if (!isPlatformBrowser(this.platformId)) return;
-    const url = prompt(type === 'avatar' ? 'Enter Profile Photo Image URL:' : 'Enter Background Image URL:');
-    if (url) {
-      if (type === 'avatar') {
-        this.userData.profilePhoto = url;
-      } else {
-        this.userData.backgroundPhoto = url;
-      }
+  onFileSelected(event: any, type: 'avatar' | 'background') {
+    const file: File = event.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      this.isSaving = true;
+      this.errorMessage = null;
+      this.successMessage = null;
+
+      const uploadUrl = `${environment.apiUrl}/ImageUploader`;
+
+      this.http.post<any>(uploadUrl, formData).subscribe({
+        next: (res) => {
+          this.isSaving = false;
+          if (res && res.url) {
+            if (type === 'avatar') {
+              this.userData.profilePhoto = res.url;
+            } else {
+              this.userData.backgroundPhoto = res.url;
+            }
+            this.successMessage = this.currentLang === 'ar' ? 'تم رفع الصورة بنجاح!' : 'Image uploaded successfully!';
+            this.saveProfile();
+          }
+        },
+        error: (err) => {
+          this.isSaving = false;
+          console.error('File upload error:', err);
+          this.errorMessage = this.currentLang === 'ar' 
+            ? 'فشل رفع الصورة! يرجى التحقق من صيغة الملف.' 
+            : 'Image upload failed! Please check file format.';
+        }
+      });
     }
   }
 

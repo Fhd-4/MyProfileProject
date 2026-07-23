@@ -76,9 +76,13 @@
     <div class="tab-pane-wrapper" *ngIf="activeTab === 'basic'">
       <!-- PROFILE PHOTO & BACKGROUND CARD -->
       <section class="glass-card section-box mb-6">
+        <!-- Hidden File Inputs -->
+        <input type="file" #avatarInput accept="image/*" style="display: none" (change)="onFileSelected($event, 'avatar')" />
+        <input type="file" #backgroundInput accept="image/*" style="display: none" (change)="onFileSelected($event, 'background')" />
+
         <div class="box-header">
           <span class="box-title-muted">{{ t.photoBgHeader }}</span>
-          <button class="action-btn-secondary" (click)="triggerPhotoUpload('background')">
+          <button class="action-btn-secondary" (click)="backgroundInput.click()">
             <i class="fa-solid fa-camera"></i>
             <span>{{ t.changeBgBtn }}</span>
           </button>
@@ -98,7 +102,7 @@
                 (error)="userData.profilePhoto = 'https://ui-avatars.com/api/?name=' + userDisplayName + '&background=1d8cf8&color=fff'"
               />
             </div>
-            <button class="change-photo-link" (click)="triggerPhotoUpload('avatar')">
+            <button class="change-photo-link" (click)="avatarInput.click()">
               <i class="fa-solid fa-arrow-up-from-bracket"></i>
               <span>{{ t.changePhotoBtn }}</span>
             </button>
