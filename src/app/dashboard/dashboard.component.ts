@@ -63,6 +63,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   errorMessage: string | null = null;
   successMessage: string | null = null;
   showPreviewModal: boolean = false;
+  showCardBackSide: boolean = false;
 
   // Edit Image Modal variables
   showEditImageModal: boolean = false;
@@ -115,7 +116,13 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
       addSkillBtn: 'Add Skill',
       addExpBtn: 'Add Experience',
       addEduBtn: 'Add Education',
-      saveSuccessMsg: 'Profile changes saved successfully!'
+      saveSuccessMsg: 'Profile changes saved successfully!',
+      aboutMe: 'About Me',
+      skills: 'Skills',
+      experience: 'Experience',
+      education: 'Education',
+      scanText: 'SCAN TO VIEW MY DIGITAL CARD',
+      saveContact: 'Save Contact'
     },
     ar: {
       brand: 'لوحة التحكم',
@@ -150,7 +157,13 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
       addSkillBtn: 'إضافة مهارة',
       addExpBtn: 'إضافة خبرة',
       addEduBtn: 'إضافة مؤهل تعليمي',
-      saveSuccessMsg: 'تم حفظ وتحديث التغييرات بنجاح!'
+      saveSuccessMsg: 'تم حفظ وتحديث التغييرات بنجاح!',
+      aboutMe: 'نبذة عني',
+      skills: 'المهارات',
+      experience: 'الخبرة المهنية',
+      education: 'التعليم',
+      scanText: 'امسح الكود لعرض كرتي الرقمي',
+      saveContact: 'حفظ جهة الاتصال'
     }
   };
 
@@ -287,6 +300,74 @@ get userSkills(): string[] {
 
   togglePreviewModal() {
     this.showPreviewModal = !this.showPreviewModal;
+    if (this.showPreviewModal) {
+      this.showCardBackSide = false;
+    }
+  }
+
+  toggleCardSide(): void {
+    this.showCardBackSide = !this.showCardBackSide;
+    this.cdr.detectChanges();
+  }
+
+  getQrCodeUrl(user: any): string {
+    if (!user || !user.id) return '';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fahd1.runasp.net';
+    const cardUrl = `${origin}/user/${user.id}`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=1d8cf8&bgcolor=090d16&data=${encodeURIComponent(cardUrl)}`;
+  }
+
+  downloadVCard(user: any, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (!user) return;
+    const vcardData = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      `FN:${user.nameEn || user.username || ''}`,
+      `ORG:${user.companyEn || ''}`,
+      `TITLE:${user.titleEn || ''}`,
+      `TEL;TYPE=CELL:${user.phone || ''}`,
+      `EMAIL;TYPE=PREF,INTERNET:${user.email || ''}`,
+      `URL:${user.website || ''}`,
+      `ADR;TYPE=WORK:;;${user.locationEn || ''};;;;`,
+      'END:VCARD'
+    ].join('\n');
+
+    const blob = new Blob([vcardData], { type: 'text/vcard;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `${user.nameEn || 'contact'}.vcf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  shareCard(user: any, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (!user) return;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fahd1.runasp.net';
+    const shareUrl = `${origin}/user/${user.id}`;
+
+    if (navigator.share) {
+      navigator.share({
+        title: user.nameEn || 'Digital Card',
+        text: `View digital card of ${user.nameEn || ''}`,
+        url: shareUrl
+      }).catch(err => console.log('Share error', err));
+    } else {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert(this.currentLang === 'ar' ? 'تم نسخ رابط المشاركة للحافظة!' : 'Share link copied to clipboard!');
+        });
+      }
+    }
   }
 
   setTab(tab: 'basic' | 'contact' | 'social' | 'skills' | 'experience' | 'education') {
