@@ -40,14 +40,17 @@
 .top-bar {
   position: relative;
   z-index: 10;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   padding: 1.5rem 2.5rem;
   width: 100%;
   box-sizing: border-box;
 
   .brand-title {
+    grid-column: 2;
+    margin: 0;
+    text-align: center;
     font-size: 1.75rem;
     font-weight: 800;
     color: #ffffff;
@@ -55,9 +58,29 @@
   }
 
   .header-actions {
+    grid-column: 3;
+    justify-self: end;
     display: flex;
     align-items: center;
     gap: 0.75rem;
+
+
+    @media (max-width: 520px) {
+  .top-bar {
+    grid-template-columns: 1fr auto;
+    padding: 1rem 1.25rem;
+
+    .brand-title {
+      grid-column: 1;
+      justify-self: start;
+      font-size: 1.35rem;
+    }
+
+    .header-actions {
+      grid-column: 2;
+    }
+  }
+}
 
     .icon-btn {
       width: 42px;
@@ -713,6 +736,86 @@
         box-shadow: 0 6px 20px rgba(29, 140, 248, 0.55);
         transform: translateY(-1px);
       }
+    }
+  }
+}
+.phone-card-container {
+  overflow: hidden;
+}
+
+.card-profile-content {
+  padding: 0 1.5rem 1.5rem;
+  color: #cbd5e1;
+}
+
+.card-about {
+  margin: 0.25rem 0 1rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.card-contact-list {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+}
+
+.card-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  text-decoration: none;
+
+  i {
+    width: 1rem;
+    color: #60a5fa;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.card-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+
+  span {
+    padding: 0.3rem 0.6rem;
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    border-radius: 999px;
+    background: rgba(30, 64, 175, 0.18);
+    color: #bfdbfe;
+    font-size: 0.72rem;
+  }
+}
+
+.card-social-links {
+  display: flex;
+  gap: 0.65rem;
+
+  a {
+    display: grid;
+    width: 2.15rem;
+    height: 2.15rem;
+    place-items: center;
+    border: 1px solid rgba(96, 165, 250, 0.28);
+    border-radius: 50%;
+    color: #e2e8f0;
+    text-decoration: none;
+    transition: background 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      background: rgba(29, 140, 248, 0.25);
+      transform: translateY(-2px);
     }
   }
 }

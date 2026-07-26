@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { finalize, timeout } from 'rxjs';
+
 
 interface Particle {
   x: number;
@@ -204,6 +206,34 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   get userEmail(): string {
     return this.userData?.email || this.userData?.Email || '';
   }
+  get userPhone(): string {
+  return this.userData?.phone || this.userData?.Phone || '';
+}
+
+get userLocation(): string {
+  return (
+    this.userData?.locationEn ||
+    this.userData?.LocationEn ||
+    this.userData?.locationAr ||
+    this.userData?.LocationAr ||
+    ''
+  );
+}
+
+get userAbout(): string {
+  return (
+    this.userData?.aboutEn ||
+    this.userData?.AboutEn ||
+    this.userData?.aboutAr ||
+    this.userData?.AboutAr ||
+    ''
+  );
+}
+
+get userSkills(): string[] {
+  const skills = this.userData?.skills || this.userData?.Skills || [];
+  return Array.isArray(skills) ? skills : [];
+}
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
@@ -463,33 +493,43 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   }
 
   saveProfile() {
-    this.isSaving = true;
-    this.errorMessage = null;
-    this.successMessage = null;
+    if (this.isSaving) return;
 
-    const token = isPlatformBrowser(this.platformId) ? localStorage.getItem('token') : null;
-    let headers = new HttpHeaders();
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
+  this.isSaving = true;
+  this.errorMessage = null;
+  this.successMessage = null;
 
-    this.http.put<any>(this.updateApiUrl, this.userData, { headers }).subscribe({
-      next: (res) => {
-        this.isSaving = false;
-        this.successMessage = this.t.saveSuccessMsg;
-        if (res.profile) {
-          this.userData = { ...this.userData, ...res.profile };
-        }
-        localStorage.setItem('user', JSON.stringify(this.userData));
-      },
-      error: (err) => {
-        this.isSaving = false;
-        console.error('Save error:', err);
-        this.errorMessage = this.currentLang === 'ar' 
-          ? 'فشل حفظ وتحديث التغييرات! يرجى التأكد من اتصال السيرفر.' 
-          : 'Failed to save changes! Please check server connection.';
+  const token = isPlatformBrowser(this.platformId)
+    ? localStorage.getItem('token')
+    : null;
+
+  let headers = new HttpHeaders();
+
+  if (token) {
+    headers = headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  this.http.put<any>(this.updateApiUrl, this.userData, { headers }).pipe(
+    timeout(15000),
+    finalize(() => {
+      this.isSaving = false;
+      this.cdr.markForCheck();
+    })
+  ).subscribe({
+    next: (res) => {
+      if (res?.profile) {
+        this.userData = { ...this.userData, ...res.profile };
       }
-    });
+
+      localStorage.setItem('user', JSON.stringify(this.userData));
+    },
+    error: (err) => {
+      console.error('Save error:', err);
+      this.errorMessage = this.currentLang === 'ar'
+        ? 'فشل حفظ وتحديث التغييرات! يرجى التأكد من اتصال السيرفر.'
+        : 'Failed to save changes! Please check server connection.';
+    }
+  });
   }
 
   logout() {

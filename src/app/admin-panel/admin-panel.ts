@@ -492,7 +492,7 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
        });
     }
   }
-
+  
   logout(): void {
     if (this.isBrowser) {
       localStorage.removeItem('token');
