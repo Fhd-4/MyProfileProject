@@ -356,10 +356,12 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getQrCodeUrl(user: any): string {
-    if (!user || !user.id) return '';
+    if (!user) return '';
+    const id = user.Id || user.id;
+    if (!id) return '';
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fahd1.runasp.net';
-    const cardUrl = `${origin}/user/${user.id}`;
-    return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=1d8cf8&bgcolor=090d16&data=${encodeURIComponent(cardUrl)}`;
+    const cardUrl = `${origin}/user/${id}`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=090d16&bgcolor=ffffff&data=${encodeURIComponent(cardUrl)}`;
   }
 
   downloadVCard(user: any, event?: Event): void {
