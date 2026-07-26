@@ -332,7 +332,7 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
   }
 
   viewClient(client: ApiUser): void {
-    const id = client.id || client.Id;
+    const id = client.id;
     if (id) {
       window.open(`/user-card/${id}`, '_blank');
     }
