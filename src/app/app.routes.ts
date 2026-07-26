@@ -14,5 +14,5 @@ export const routes: Routes = [
 
   { path: 'admin-panel', component: AdminPanel },
   { path: 'dashboard', component: Dashboard },
-  { path: 'user/:id', component: UserCardComponent }
+  { path: 'user-card/:id', component: UserCardComponent }
 ];

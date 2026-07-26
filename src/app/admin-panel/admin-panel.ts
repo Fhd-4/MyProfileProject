@@ -332,22 +332,10 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
   }
 
   viewClient(client: ApiUser): void {
-    const id = client.id;
-    if (!id) return;
-    this.http.get<any>(`${environment.apiUrl}/Profile/user/${id}`).subscribe({
-      next: (data) => {
-        if (data) {
-          this.previewUser = data;
-          this.showCardBackSide = false;
-          this.showPreviewModal = true;
-          this.cdr.detectChanges();
-        }
-      },
-      error: (err) => {
-        console.error(err);
-        alert(this.currentLang === 'ar' ? 'لم يتم العثور على ملف تعريف أو كرت رقمي لهذا العميل بعد!' : 'No digital card profile found for this client yet!');
-      }
-    });
+    const id = client.id || client.Id;
+    if (id) {
+      window.open(`/user-card/${id}`, '_blank');
+    }
   }
 
   toggleCardSide(): void {
@@ -360,7 +348,7 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
     const id = user.Id || user.id;
     if (!id) return '';
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fahd1.runasp.net';
-    const cardUrl = `${origin}/user/${id}`;
+    const cardUrl = `${origin}/user-card/${id}`;
     return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=090d16&bgcolor=ffffff&data=${encodeURIComponent(cardUrl)}`;
   }
 
@@ -399,8 +387,10 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
       event.stopPropagation();
     }
     if (!user) return;
+    const id = user.Id || user.id;
+    if (!id) return;
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fahd1.runasp.net';
-    const shareUrl = `${origin}/user/${user.id}`;
+    const shareUrl = `${origin}/user-card/${id}`;
 
     if (navigator.share) {
       navigator.share({

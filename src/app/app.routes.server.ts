@@ -2,7 +2,7 @@ import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const serverRoutes: ServerRoute[] = [
   {
-    path: 'user/:id',
+    path: 'user-card/:id',
     renderMode: RenderMode.Client
   },
   {
