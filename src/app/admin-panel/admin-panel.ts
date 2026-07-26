@@ -334,7 +334,7 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
   viewClient(client: ApiUser): void {
     const id = client.id;
     if (id) {
-      window.open(`/user-card/${id}`, '_blank');
+      window.open(`/user-card?id=${id}`, '_blank');
     }
   }
 
@@ -348,7 +348,7 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
     const id = user.Id || user.id;
     if (!id) return '';
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fahd1.runasp.net';
-    const cardUrl = `${origin}/user-card/${id}`;
+    const cardUrl = `${origin}/user-card?id=${id}`;
     return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=090d16&bgcolor=ffffff&data=${encodeURIComponent(cardUrl)}`;
   }
 
@@ -390,7 +390,7 @@ export class AdminPanel implements OnInit, AfterViewInit, OnDestroy {
     const id = user.Id || user.id;
     if (!id) return;
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fahd1.runasp.net';
-    const shareUrl = `${origin}/user-card/${id}`;
+    const shareUrl = `${origin}/user-card?id=${id}`;
 
     if (navigator.share) {
       navigator.share({

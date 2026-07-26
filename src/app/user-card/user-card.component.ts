@@ -68,14 +68,31 @@ export class UserCardComponent implements AfterViewInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    // Detect route parameter 'id'
-    this.route.params.subscribe(params => {
-      const id = params['id'];
-      if (id) {
-        this.fetchUserProfile(id);
+    // Combine params and queryParams to support both /user-card?id=... and /user-card/:id formats
+    this.route.queryParams.subscribe(qParams => {
+      const qId = qParams['id'];
+      if (qId) {
+        this.fetchUserProfile(qId);
       } else {
-        this.isLoading = false;
-        this.errorMessage = 'No user specified.';
+        this.route.params.subscribe(params => {
+          const pId = params['id'];
+          if (pId) {
+            this.fetchUserProfile(pId);
+          } else {
+            if (isPlatformBrowser(this.platformId)) {
+              const savedId = localStorage.getItem('userId');
+              if (savedId) {
+                this.fetchUserProfile(savedId);
+              } else {
+                this.isLoading = false;
+                this.errorMessage = this.currentLang === 'ar' ? 'الملف الشخصي غير موجود أو غير نشط.' : 'Profile not found or is inactive.';
+                this.cdr.detectChanges();
+              }
+            } else {
+              this.isLoading = false;
+            }
+          }
+        });
       }
     });
 
@@ -142,7 +159,7 @@ export class UserCardComponent implements AfterViewInit, OnDestroy {
     const id = user.Id || user.id;
     if (!id) return '';
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fahd1.runasp.net';
-    const cardUrl = `${origin}/user-card/${id}`;
+    const cardUrl = `${origin}/user-card?id=${id}`;
     return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=090d16&bgcolor=ffffff&data=${encodeURIComponent(cardUrl)}`;
   }
 
@@ -184,7 +201,7 @@ export class UserCardComponent implements AfterViewInit, OnDestroy {
     const id = user.Id || user.id;
     if (!id) return;
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fahd1.runasp.net';
-    const shareUrl = `${origin}/user-card/${id}`;
+    const shareUrl = `${origin}/user-card?id=${id}`;
 
     if (navigator.share) {
       navigator.share({

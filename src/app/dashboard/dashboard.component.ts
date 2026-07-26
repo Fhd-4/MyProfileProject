@@ -301,7 +301,7 @@ get userSkills(): string[] {
   togglePreviewModal() {
     const id = this.userData?.Id || this.userData?.id || this.userId;
     if (id) {
-      window.open(`/user-card/${id}`, '_blank');
+      window.open(`/user-card?id=${id}`, '_blank');
     }
   }
 
@@ -315,7 +315,7 @@ get userSkills(): string[] {
     const id = user.Id || user.id;
     if (!id) return '';
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fahd1.runasp.net';
-    const cardUrl = `${origin}/user-card/${id}`;
+    const cardUrl = `${origin}/user-card?id=${id}`;
     return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=090d16&bgcolor=ffffff&data=${encodeURIComponent(cardUrl)}`;
   }
 
@@ -357,7 +357,7 @@ get userSkills(): string[] {
     const id = user.Id || user.id;
     if (!id) return;
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://fahd1.runasp.net';
-    const shareUrl = `${origin}/user-card/${id}`;
+    const shareUrl = `${origin}/user-card?id=${id}`;
 
     if (navigator.share) {
       navigator.share({
