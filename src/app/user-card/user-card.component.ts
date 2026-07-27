@@ -139,9 +139,6 @@ export class UserCardComponent implements AfterViewInit, OnDestroy {
   fetchUserProfile(id: string) {
     this.isLoading = true;
     this.errorMessage = null;
-    if (!this.isDestroyed) {
-      this.cdr.detectChanges();
-    }
     this.http.get<any>(`${this.getApiUrl}${id}`).subscribe({
       next: (data) => {
         if (this.isDestroyed) return;
