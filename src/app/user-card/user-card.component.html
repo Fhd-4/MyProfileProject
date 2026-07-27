@@ -51,9 +51,9 @@
 
         <!-- Quick Action Links -->
         <div class="quick-action-row">
-          <a *ngIf="userData.website" [href]="userData.website" target="_blank" class="qa-item"><i class="fa-solid fa-globe"></i><span>Web</span></a>
-          <a *ngIf="userData.linkedIn" [href]="userData.linkedIn" target="_blank" class="qa-item"><i class="fa-brands fa-linkedin"></i><span>LinkedIn</span></a>
-          <a *ngIf="userData.whatsApp" [href]="userData.whatsApp" target="_blank" class="qa-item"><i class="fa-brands fa-whatsapp"></i><span>Chat</span></a>
+          <a *ngIf="userData.website" [href]="websiteUrl" target="_blank" class="qa-item"><i class="fa-solid fa-globe"></i><span>Web</span></a>
+          <a *ngIf="userData.linkedIn" [href]="linkedinUrl" target="_blank" class="qa-item"><i class="fa-brands fa-linkedin"></i><span>LinkedIn</span></a>
+          <a *ngIf="userData.whatsApp" [href]="whatsAppUrl" target="_blank" class="qa-item"><i class="fa-brands fa-whatsapp"></i><span>Chat</span></a>
           <a *ngIf="userData.email" [href]="'mailto:' + userData.email" class="qa-item"><i class="fa-solid fa-envelope"></i><span>Email</span></a>
           <a *ngIf="userData.phone" [href]="'tel:' + userData.phone" class="qa-item"><i class="fa-solid fa-phone"></i><span>Call</span></a>
         </div>

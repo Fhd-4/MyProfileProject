@@ -136,6 +136,32 @@ export class UserCardComponent implements AfterViewInit, OnDestroy {
     return Array.isArray(edu) ? edu : [];
   }
 
+  get whatsAppUrl(): string {
+    const phone = this.userData?.whatsApp || this.userData?.WhatsApp;
+    if (!phone) return '';
+    // Strip all non-numeric characters (spaces, +, dashes, parentheses)
+    const cleaned = phone.replace(/[^0-9]/g, '');
+    return `https://wa.me/${cleaned}`;
+  }
+
+  get linkedinUrl(): string {
+    const url = this.userData?.linkedIn || this.userData?.LinkedIn;
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return `https://www.linkedin.com/in/${url}`;
+  }
+
+  get websiteUrl(): string {
+    const url = this.userData?.website || this.userData?.Website;
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return `https://${url}`;
+  }
+
   fetchUserProfile(id: string) {
     this.isLoading = true;
     this.errorMessage = null;
