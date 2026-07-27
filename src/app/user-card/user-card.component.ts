@@ -138,6 +138,7 @@ export class UserCardComponent implements AfterViewInit, OnDestroy {
   fetchUserProfile(id: string) {
     this.isLoading = true;
     this.errorMessage = null;
+    this.cdr.detectChanges();
     this.http.get<any>(`${this.getApiUrl}${id}`).subscribe({
       next: (data) => {
         this.isLoading = false;
@@ -146,11 +147,13 @@ export class UserCardComponent implements AfterViewInit, OnDestroy {
         } else {
           this.errorMessage = this.currentLang === 'ar' ? this.translations.ar.notFound : this.translations.en.notFound;
         }
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.isLoading = false;
         console.error('Error fetching user profile card:', err);
         this.errorMessage = this.currentLang === 'ar' ? this.translations.ar.notFound : this.translations.en.notFound;
+        this.cdr.detectChanges();
       }
     });
   }
