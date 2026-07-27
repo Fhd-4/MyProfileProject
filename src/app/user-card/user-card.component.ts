@@ -36,6 +36,7 @@ export class UserCardComponent implements AfterViewInit, OnDestroy {
   private ctx: CanvasRenderingContext2D | null = null;
   private animId: number = 0;
   private particles: Particle[] = [];
+  private isDestroyed: boolean = false;
   private mouse = { x: -1000, y: -1000, radius: 180 };
 
   translations = {
@@ -138,9 +139,12 @@ export class UserCardComponent implements AfterViewInit, OnDestroy {
   fetchUserProfile(id: string) {
     this.isLoading = true;
     this.errorMessage = null;
-    this.cdr.detectChanges();
+    if (!this.isDestroyed) {
+      this.cdr.detectChanges();
+    }
     this.http.get<any>(`${this.getApiUrl}${id}`).subscribe({
       next: (data) => {
+        if (this.isDestroyed) return;
         this.isLoading = false;
         if (data) {
           this.userData = data;
@@ -150,6 +154,7 @@ export class UserCardComponent implements AfterViewInit, OnDestroy {
         this.cdr.detectChanges();
       },
       error: (err) => {
+        if (this.isDestroyed) return;
         this.isLoading = false;
         console.error('Error fetching user profile card:', err);
         this.errorMessage = this.currentLang === 'ar' ? this.translations.ar.notFound : this.translations.en.notFound;
@@ -244,6 +249,7 @@ export class UserCardComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.isDestroyed = true;
     if (this.animId) {
       cancelAnimationFrame(this.animId);
     }
