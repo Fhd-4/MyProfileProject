@@ -120,6 +120,21 @@ export class UserCardComponent implements AfterViewInit, OnDestroy {
       : (this.userData.nameEn || this.userData.username || '');
   }
 
+  get userSkills(): string[] {
+    const skills = this.userData?.skills || this.userData?.Skills || [];
+    return Array.isArray(skills) ? skills : [];
+  }
+
+  get userExperiences(): any[] {
+    const exp = this.userData?.experiences || this.userData?.Experiences || [];
+    return Array.isArray(exp) ? exp : [];
+  }
+
+  get userEducations(): any[] {
+    const edu = this.userData?.educations || this.userData?.Educations || [];
+    return Array.isArray(edu) ? edu : [];
+  }
+
   fetchUserProfile(id: string) {
     this.isLoading = true;
     this.errorMessage = null;

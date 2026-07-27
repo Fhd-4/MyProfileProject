@@ -131,24 +131,24 @@
         </div>
 
         <!-- Skills section -->
-        <div class="section-card-block" *ngIf="userData.skills && userData.skills.length > 0">
+        <div class="section-card-block" *ngIf="userSkills && userSkills.length > 0">
           <div class="block-title">
             <div class="block-icon blue"><i class="fa-solid fa-ribbon"></i></div>
             <span>{{ t.skills }}</span>
           </div>
           <div class="block-content flex-wrap-row">
-            <span class="skill-tag-badge" *ngFor="let s of userData.skills">{{ s }}</span>
+            <span class="skill-tag-badge" *ngFor="let s of userSkills">{{ s }}</span>
           </div>
         </div>
 
         <!-- Experience section -->
-        <div class="section-card-block" *ngIf="userData.experiences && userData.experiences.length > 0">
+        <div class="section-card-block" *ngIf="userExperiences && userExperiences.length > 0">
           <div class="block-title">
             <div class="block-icon blue"><i class="fa-solid fa-briefcase"></i></div>
             <span>{{ t.experience }}</span>
           </div>
           <div class="block-content items-vertical-list">
-            <div class="list-item-block" *ngFor="let exp of userData.experiences">
+            <div class="list-item-block" *ngFor="let exp of userExperiences">
               <h5>{{ currentLang === 'ar' ? (exp.titleAr || exp.titleEn) : (exp.titleEn || exp.titleAr) }}</h5>
               <p>{{ currentLang === 'ar' ? (exp.companyAr || exp.companyEn) : (exp.companyEn || exp.companyAr) }}</p>
             </div>
@@ -156,13 +156,13 @@
         </div>
 
         <!-- Education section -->
-        <div class="section-card-block" *ngIf="userData.educations && userData.educations.length > 0">
+        <div class="section-card-block" *ngIf="userEducations && userEducations.length > 0">
           <div class="block-title">
             <div class="block-icon blue"><i class="fa-solid fa-graduation-cap"></i></div>
             <span>{{ t.education }}</span>
           </div>
           <div class="block-content items-vertical-list">
-            <div class="list-item-block" *ngFor="let edu of userData.educations">
+            <div class="list-item-block" *ngFor="let edu of userEducations">
               <h5>{{ currentLang === 'ar' ? (edu.degreeAr || edu.degreeEn) : (edu.degreeEn || edu.degreeAr) }}</h5>
               <p>{{ currentLang === 'ar' ? (edu.fieldAr || edu.fieldEn) : (edu.fieldEn || edu.fieldAr) }}</p>
             </div>
